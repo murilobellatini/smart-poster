@@ -6,7 +6,7 @@ def draw_text(txt, font='Poppins-Bold.otf', fontsize=35, fontcolor_hex="black", 
     font = ImageFont.truetype(font, fontsize)
     fontcolor = ImageColor.getcolor(fontcolor_hex, "RGB")
 
-    filename = txt.replace('\n', '-')
+    filename = txt.replace('\n', '-').replace(':', '').replace(';', '').replace(',', '').replace('.', '')
 
     im_dummy = Image.new("RGBA", (1, 1))
     draw = ImageDraw.Draw(im_dummy)
