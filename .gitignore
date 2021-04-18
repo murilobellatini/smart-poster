@@ -142,3 +142,7 @@ cython_debug/
 
 *.png
 *.PNG
+*.JPG
+*.jpg
+*.JPEG
+*.jpeg
