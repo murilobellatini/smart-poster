@@ -10,7 +10,7 @@ unsplash_key = os.environ.get('UNSPLASH_ACCESS_KEY')
 google_key = os.environ.get('GCP_KEY')
 google_cx = os.environ.get('GCX')
 
-# instantiate iamge search objects
+# instantiate image search objects
 unsplash = PyUnsplash(api_key=unsplash_key)
 gis = GoogleImagesSearch(google_key, google_cx)
 
