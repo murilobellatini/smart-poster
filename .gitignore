@@ -137,9 +137,11 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Credentials are confidential!
 /credentials/*
 !/credentials/.gitkeep
 
+# Images
 *.png
 *.PNG
 *.JPG
