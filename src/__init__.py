@@ -2,10 +2,14 @@
 Scripts for storing global objects with preset parameters.
 """
 from gcloud import storage
+from dotenv import load_dotenv
 # from src.paths import GCS_BUCKET
 from src import custom_logging as logging
 from src.credentials import gcloud_credentials_dict
 from oauth2client.service_account import ServiceAccountCredentials
+
+
+load_dotenv()
 
 # # loads Google Cloud credentials
 # credentials = ServiceAccountCredentials.from_json_keyfile_dict(
