@@ -1,5 +1,7 @@
 import io
+import numpy as np
 from PIL import Image, ImageEnhance
+from src.image.detect import flip_if_necessary
 from src.image.color import get_contrast_color
 from src.image.draw import draw_text, resize_img
 from src.paths import LOCAL_GLOBAL_DATA, LOCAL_PROCESSED_DATA_PATH
@@ -26,7 +28,9 @@ def merge_text_to_image(img: Image, txt: str, top_right_txt: str = None, overlay
 
     canvas = Image.open(
         str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVAS.png')).convert("RGBA")
-    img_ = img.convert("RGBA")
+
+    img_ = flip_if_necessary(img.convert("RGB"))
+
     if canvas.size != img_.size:
         overlay = Image.open(
             str(LOCAL_GLOBAL_DATA / 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT_SOFT.png'))
@@ -60,3 +64,7 @@ def merge_text_to_image(img: Image, txt: str, top_right_txt: str = None, overlay
         canva_reloaded = Image.open(f).convert('RGBA')
         canvas_black.paste(canva_reloaded, (0, 0), canva_reloaded)
         return canvas_black.convert('RGB')
+
+
+def np2img(numpy_image: np.array):
+    return Image.fromarray(numpy_image.astype('uint8'), 'RGBA')
