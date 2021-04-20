@@ -15,7 +15,10 @@ def merge_text_to_image(img:Image, txt:str, overlay:str='OVERLAY_80%OP_BLACK_BOT
     """
     canvas = Image.open(str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVAS.png')).convert("RGBA")
     img_ = img.convert("RGBA")
-    overlay = Image.open(str(LOCAL_GLOBAL_DATA / f'{overlay}.png'))
+    if canvas.size != img_.size:
+        overlay = Image.open(str(LOCAL_GLOBAL_DATA / 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT.png'))
+    else:
+        overlay = Image.open(str(LOCAL_GLOBAL_DATA / f'{overlay}.png'))
     txt_color = get_contrast_color(img_)
     txt_ = resize_img(draw_text(txt, fontsize=200, fontcolor_hex=txt_color, target_ar=txt_aspect_ratio), (0,1000))
     
