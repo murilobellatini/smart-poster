@@ -21,6 +21,18 @@
      id="defs2">
     <linearGradient
        inkscape:collect="always"
+       id="linearGradient896">
+      <stop
+         style="stop-color:#000000;stop-opacity:1"
+         offset="0"
+         id="stop892" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0"
+         offset="1"
+         id="stop894" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
        id="linearGradient864">
       <stop
          style="stop-color:#000000;stop-opacity:1"
@@ -149,22 +161,22 @@
        gradientTransform="translate(-623.73303,12.778902)" />
     <linearGradient
        inkscape:collect="always"
-       xlink:href="#linearGradient1005"
+       xlink:href="#linearGradient896"
        id="linearGradient845-6-2-3-7-1-1"
-       x1="326.00858"
-       y1="224.93065"
-       x2="553.54456"
-       y2="183.74266"
+       x1="336.01941"
+       y1="219.21017"
+       x2="439.13492"
+       y2="200.90411"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(-626.75684,-313.45433)" />
+       gradientTransform="matrix(1.057187,0,0,1.057187,-641.29613,-313.20873)" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient864"
        id="linearGradient845-6-2-3-7-1-7"
        x1="288.21094"
        y1="215.85924"
-       x2="524.81836"
-       y2="161.06409"
+       x2="422.00885"
+       y2="189.79028"
        gradientUnits="userSpaceOnUse"
        gradientTransform="translate(-327.73789,-635.82823)" />
   </defs>
@@ -177,7 +189,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.175"
      inkscape:cx="1123.6686"
-     inkscape:cy="-620.38772"
+     inkscape:cy="-848.95915"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -278,10 +290,10 @@
        inkscape:export-xdpi="101.49"
        inkscape:export-ydpi="101.49" />
     <rect
-       style="opacity:1;fill:url(#linearGradient845-6-2-3-7-1-1);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:15.4573;stroke-linejoin:round;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
+       style="opacity:1;fill:url(#linearGradient845-6-2-3-7-1-1);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:16.3413;stroke-linejoin:round;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
        id="rect837-8-6-8-1-1-2"
-       width="270.29276"
-       height="270.29276"
+       width="285.75"
+       height="285.75"
        x="-372.51541"
        y="-317.74866"
        inkscape:export-xdpi="101.48996"
