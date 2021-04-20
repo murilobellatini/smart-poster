@@ -44,8 +44,8 @@ def get_color_palette(img: Image, quality: int = 5, color_count: int = 6):
 def rgb2hex(rgb:tuple) -> tuple:
     return rgb2hex_(*(int(c) for c in rgb))
 
-def get_contrast_color(image:Image, sat:float=1, brigthness_index:float=.5) -> str:
+def get_contrast_color(image:Image, sat:float=1, brightness:float=.5) -> str:
     palette = get_color_palette(image.convert("RGBA"))
     most_sat_color = get_most_saturated_color(palette)
-    txt_color = rgb2hex(increase_brightness(saturate_color(most_sat_color, sat=1), pct=.5))
+    txt_color = rgb2hex(increase_brightness(saturate_color(most_sat_color, sat=1), pct=brightness))
     return txt_color

@@ -1,4 +1,5 @@
 import cv2
+import textwrap
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageColor
 
@@ -21,14 +22,12 @@ def draw_text(txt: str, target_ar: float = None, font='Poppins-Bold.otf', fontsi
 
     if target_ar:
         imgs = []
-        for cw in range(1, 10):
-            words = [
-                w if (i+1) % cw != 0 else f"{w}\n" for i, w in enumerate(txt.split(' '))]
-            txt2 = ' '.join(words)
-            img = draw_text(txt=txt2, target_ar=None, font=font, fontsize=fontsize,
+        for w in range(10, 60, 10):
+            wrapped_txt = textwrap.fill(txt, width=w)
+            img = draw_text(txt=wrapped_txt, target_ar=None, font=font, fontsize=fontsize,
                             fontcolor_hex=fontcolor_hex)
             ar = img.size[0] / img.size[1]
-            imgs.append({'cw': cw, 'aspect_ratio': ar, 'img': img})
+            imgs.append({'width': w, 'aspect_ratio': ar, 'img': img})
 
         im = select_closest(imgs, target_ar, 'aspect_ratio')['img']
 
