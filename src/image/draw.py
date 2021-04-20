@@ -7,13 +7,14 @@ from src.helpers import select_closest
 from src.paths import LOCAL_RAW_DATA_PATH
 
 
-def draw_text(txt: str, target_ar: float = None, font='Poppins-Bold.otf', fontsize=50, fontcolor_hex="black"):
+def draw_text(txt: str, target_ar: float = None, font='Poppins-Bold.otf', fontsize=50, fontcolor_hex="black", padding: float = 0.1):
     imgfont = ImageFont.truetype(font, fontsize)
     fontcolor = ImageColor.getcolor(fontcolor_hex, "RGB")
 
     im_dummy = Image.new("RGBA", (1, 1))
     draw = ImageDraw.Draw(im_dummy)
     W, H = draw.textsize(txt, imgfont)
+    W, H = int(W*(1+padding)), int(H*(1+padding))
 
     im = Image.new("RGBA", (W, H))
     draw = ImageDraw.Draw(im)
@@ -23,7 +24,7 @@ def draw_text(txt: str, target_ar: float = None, font='Poppins-Bold.otf', fontsi
     if target_ar:
         imgs = []
         for w in range(10, 60, 10):
-            wrapped_txt = textwrap.fill(txt, width=w)
+            wrapped_txt = textwrap.fill(txt, width=w, break_long_words=False)
             img = draw_text(txt=wrapped_txt, target_ar=None, font=font, fontsize=fontsize,
                             fontcolor_hex=fontcolor_hex)
             ar = img.size[0] / img.size[1]
