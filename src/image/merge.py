@@ -1,3 +1,4 @@
+import io
 from PIL import Image, ImageEnhance
 from src.image.color import get_contrast_color
 from src.image.draw import draw_text, resize_img
@@ -51,4 +52,11 @@ def merge_text_to_image(img: Image, txt: str, profile_url: str = None, overlay: 
         canvas.paste(profile_url_, (int(img_.size[0]-padding/2-profile_url_.size[0]),
                      int(padding/2)), profile_url_)
 
-    return canvas
+    canvas_black = Image.open(
+        str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVA_BLACK.png')).convert("RGBA")
+
+    with io.BytesIO() as f:
+        canvas.save(f, "PNG")
+        canva_reloaded = Image.open(f).convert('RGBA')
+        canvas_black.paste(canva_reloaded, (0, 0), canva_reloaded)
+        return canvas_black.convert("RGBA")

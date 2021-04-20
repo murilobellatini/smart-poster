@@ -1,13 +1,13 @@
 import cv2
 import textwrap
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont, ImageColor
+from PIL import Image, ImageDraw, ImageFont, ImageColor, ImageFilter, ImageEnhance
 
 from src.helpers import select_closest
 from src.paths import LOCAL_RAW_DATA_PATH
 
 
-def draw_text(txt: str, target_ar: float = None, font='Poppins-Bold.otf', fontsize=50, fontcolor_hex="black", padding: float = 0.1):
+def draw_text(txt: str, target_ar: float = None, font='Poppins-Bold.otf', fontsize=50, fontcolor_hex="black", padding: float = 0.2, blured_halo: bool = True):
     imgfont = ImageFont.truetype(font, fontsize)
     fontcolor = ImageColor.getcolor(fontcolor_hex, "RGB")
 
@@ -26,15 +26,18 @@ def draw_text(txt: str, target_ar: float = None, font='Poppins-Bold.otf', fontsi
         for w in range(10, 60, 10):
             wrapped_txt = textwrap.fill(txt, width=w, break_long_words=False)
             img = draw_text(txt=wrapped_txt, target_ar=None, font=font, fontsize=fontsize,
-                            fontcolor_hex=fontcolor_hex)
+                            fontcolor_hex=fontcolor_hex, padding=padding, blured_halo=blured_halo)
             ar = img.size[0] / img.size[1]
             imgs.append({'width': w, 'aspect_ratio': ar, 'img': img})
 
         im = select_closest(imgs, target_ar, 'aspect_ratio')['img']
 
+    if blured_halo:
+        im = add_blurred_halo(im, blur_radius=fontsize/5)
+
     setattr(im, 'txt', txt)
 
-    return im
+    return im.convert('RGBA')
 
 
 def export_txt(txt_img: Image, format: str = "PNG"):
@@ -77,3 +80,12 @@ def resize_img(img, xy: tuple):
             xy = (xy[0], xy[0]/ar)
 
     return img.resize((int(xy[0]), int(xy[1])))
+
+
+def add_blurred_halo(im, blur_radius: int = 10):
+    blurred_halo = im.filter(ImageFilter.GaussianBlur(blur_radius))
+    gray_halo = blurred_halo.convert('LA').convert('RGBA')
+    enhancer = ImageEnhance.Brightness(gray_halo)
+    gray_halo = enhancer.enhance(0)
+    gray_halo.paste(im, (0, 0), im)
+    return gray_halo
