@@ -4,19 +4,21 @@ from src.image.draw import draw_text, resize_img
 from src.paths import LOCAL_GLOBAL_DATA, LOCAL_PROCESSED_DATA_PATH
 
 
-def merge_text_to_image(img:Image, txt:str, overlay:str='OVERLAY_80%OP_BLACK_BOTTOM_LEFT', left_padding:float=60, txt_aspect_ratio:float=0.3):
+def merge_text_to_image(img:Image, txt:str, overlay:str='OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT', left_padding:float=60, txt_aspect_ratio:float=0.3):
     """
     Merges text `txt` to image `img` with possible overlays below:
 
     - 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT'
+    - 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT_SOFT'
     - 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT'
+    - 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT'
 
     Output with squared aspect ratio.
     """
     canvas = Image.open(str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVAS.png')).convert("RGBA")
     img_ = img.convert("RGBA")
     if canvas.size != img_.size:
-        overlay = Image.open(str(LOCAL_GLOBAL_DATA / 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT.png'))
+        overlay = Image.open(str(LOCAL_GLOBAL_DATA / 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT_SOFT.png'))
     else:
         overlay = Image.open(str(LOCAL_GLOBAL_DATA / f'{overlay}.png'))
     txt_color = get_contrast_color(img_)
