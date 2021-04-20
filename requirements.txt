@@ -90,7 +90,7 @@ Send2Trash==1.5.0
 simplejson==3.17.2
 six==1.15.0
 smartcrop==0.3.2
--e git+https://github.com/murilobellatini/auto-post-generator.git@35c799e1238be1883e3b81048c6f3403b69e43a6#egg=src
+-e .
 termcolor==1.1.0
 terminado==0.9.4
 testpath==0.4.4
