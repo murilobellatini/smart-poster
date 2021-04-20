@@ -8,17 +8,17 @@ import time
 from src.paths import LOCAL_PROCESSED_DATA_PATH
 
 
-def crop(url:str, export:bool = False, output_size:tuple=(1080,1080), format:str="JPEG", filename:str=None):
+def crop(url: str, export: bool = False, output_size: tuple = (1080, 1080), format: str = "JPEG", filename: str = None):
     ratio = output_size[0]/output_size[1]
     image = Image.open(requests.get(url, stream=True).raw)
     cropper = SmartCrop()
     result = cropper.crop(image, 100*ratio, 100)
     box = (
-            result['top_crop']['x'],
-            result['top_crop']['y'],
-            result['top_crop']['width'] + result['top_crop']['x'],
-            result['top_crop']['height'] + result['top_crop']['y']
-        )
+        result['top_crop']['x'],
+        result['top_crop']['y'],
+        result['top_crop']['width'] + result['top_crop']['x'],
+        result['top_crop']['height'] + result['top_crop']['y']
+    )
     cropped_image = image.crop(box)
     resized_image = cropped_image.resize(output_size)
 
