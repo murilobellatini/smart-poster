@@ -25,9 +25,19 @@ def detect_objects(img: np.ndarray, thres: float = 0.45):
     return classIds, classNames, confs, bbox
 
 
-def get_obj_bboxes(img: Image):
+def get_obj_bboxes(img: Image, thresh: float = 0.8):
     img_ = np.array(img)
-    return detect_objects(img_)[-1]
+
+    bboxes = detect_objects(img_)[-1]
+    conf_lvls = detect_objects(img_)[-2]
+
+    filtered_bboxes = np.array([])
+
+    for c, b in zip(conf_lvls, bboxes):
+        if c >= thresh:
+            filtered_bboxes = np.append(filtered_bboxes, b)
+
+    return filtered_bboxes
 
 
 def object_area_coverage(img, bboxes):
@@ -54,11 +64,13 @@ def object_area_coverage(img, bboxes):
 
 
 def is_left_more_covered(area_distributions: np.array):
+    if len(area_distributions) == 0:
+        return False
     sums = area_distributions.sum(axis=0)
     return sums[0] > sums[1]
 
 
-def flip_if_necessary(img: Image):
+def flip_if_necessary(img: Image, min_conf: float = 0.65):
     bboxes = get_obj_bboxes(img)
     area_dist = object_area_coverage(img, bboxes)
     if is_left_more_covered(area_dist):
