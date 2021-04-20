@@ -84,8 +84,8 @@ def resize_img(img, xy: tuple):
 
 def add_blurred_halo(im, blur_radius: int = 10):
     blurred_halo = im.filter(ImageFilter.GaussianBlur(blur_radius))
-    gray_halo = blurred_halo.convert('LA').convert('RGBA')
-    enhancer = ImageEnhance.Brightness(gray_halo)
+    blurred_halo_ = blurred_halo.convert('RGBA')
+    enhancer = ImageEnhance.Brightness(blurred_halo_)
     gray_halo = enhancer.enhance(0)
     gray_halo.paste(im, (0, 0), im)
     return gray_halo

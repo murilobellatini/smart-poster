@@ -59,4 +59,4 @@ def merge_text_to_image(img: Image, txt: str, profile_url: str = None, overlay: 
         canvas.save(f, "PNG")
         canva_reloaded = Image.open(f).convert('RGBA')
         canvas_black.paste(canva_reloaded, (0, 0), canva_reloaded)
-        return canvas_black.convert("RGBA")
+        return canvas_black.convert('RGB')
