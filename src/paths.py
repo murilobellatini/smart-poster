@@ -11,6 +11,7 @@ from pathlib import PurePosixPath
 root_path = Path(__file__).parents[1]
 
 
+LOCAL_GLOBAL_DATA = root_path / 'data/global'
 LOCAL_EXTERNAL_DATA_PATH = root_path / 'data/external'
 LOCAL_RAW_DATA_PATH = root_path / 'data/raw'
 LOCAL_INTERIM_DATA_PATH = root_path / 'data/interim'
