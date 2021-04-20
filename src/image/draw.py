@@ -62,3 +62,18 @@ def draw_boxes(img: np.ndarray, classIds: np.ndarray, classNames: list, confs: n
                     (box[0]+200, box[1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
 
     return img_boxed, gray
+
+
+def resize_img(img, xy: tuple):
+    """
+    Resizes image `img` according to tuple `xy`
+    Keeps aspect ratio if one dimension is set to zero.
+    """
+    if min(xy) == 0:
+        ar = img.size[0] / img.size[1]
+        if xy[0] == 0:
+            xy = (xy[1]*ar, xy[1])
+        else:
+            xy = (xy[0], xy[0]/ar)
+
+    return img.resize((int(xy[0]), int(xy[1])))
