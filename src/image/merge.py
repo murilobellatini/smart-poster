@@ -5,7 +5,7 @@ from src.image.draw import draw_text, resize_img
 from src.paths import LOCAL_GLOBAL_DATA, LOCAL_PROCESSED_DATA_PATH
 
 
-def merge_text_to_image(img: Image, txt: str, profile_url: str = None, overlay: str = 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT', padding: float = 60, txt_aspect_ratio: float = 0.3, txt_brightness: float = 1, max_words: int = 16):
+def merge_text_to_image(img: Image, txt: str, top_right_txt: str = None, overlay: str = 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT', padding: float = 60, txt_aspect_ratio: float = 0.3, txt_brightness: float = 1, max_words: int = 16):
     """
     Merges text `txt` to image `img` with possible overlays below:
 
@@ -38,19 +38,19 @@ def merge_text_to_image(img: Image, txt: str, profile_url: str = None, overlay: 
                       fontcolor_hex=txt_color, target_ar=txt_aspect_ratio), (0, 1000))
     txt_ = ImageEnhance.Brightness(txt_).enhance((1+txt_brightness))
 
-    profile_url_ = resize_img(draw_text(f'{profile_url}',
-                                        font='Poppins-Light.otf', fontsize=200, fontcolor_hex=txt_color), (400, 0))
-    profile_url_ = ImageEnhance.Brightness(
-        profile_url_).enhance((1+txt_brightness))
+    top_right_txt_ = resize_img(draw_text(f'{top_right_txt}',
+                                          font='Poppins-Light.otf', fontsize=200, fontcolor_hex=txt_color), (400, 0))
+    top_right_txt_ = ImageEnhance.Brightness(
+        top_right_txt_).enhance((1+txt_brightness))
 
     canvas.paste(img_, (int(canvas.size[0] - img_.size[0]), 0), img_)
     canvas.paste(overlay, (0, 0), overlay)
     canvas.paste(txt_, (padding,
                         int((img_.size[1] - txt_.size[1])/2)), txt_)
 
-    if profile_url:
-        canvas.paste(profile_url_, (int(img_.size[0]-padding/2-profile_url_.size[0]),
-                     int(padding/2)), profile_url_)
+    if top_right_txt:
+        canvas.paste(top_right_txt_, (int(img_.size[0]-padding/2-top_right_txt_.size[0]),
+                     int(padding/2)), top_right_txt_)
 
     canvas_black = Image.open(
         str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVA_BLACK.png')).convert("RGBA")
