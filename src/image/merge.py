@@ -1,14 +1,12 @@
-import io
 import numpy as np
 from PIL import Image, ImageEnhance
-from src.text.manipulate import break_text
 from src.image.detect import flip_if_necessary
 from src.image.draw import draw_text, resize_img
 from src.image.color import get_contrast_color, set_img_brightness
 from src.paths import LOCAL_GLOBAL_DATA
 
 
-def merge_text_to_image(img: Image, txt: str, bottom_right_txt: str = ' ', top_right_txt: str = ' ', padding: float = 60, txt_aspect_ratio: float = 0.3, txt_brightness: float = 1, max_words: int = 16):
+def merge_text_to_image(img: Image, txt: str, bottom_right_txt: str = ' ', top_right_txt: str = ' ', padding: float = 60, txt_brightness: float = 1, txt_aspect_ratio: str = 'NARROW'):
     """
     Merges text `txt` to image `img` with possible overlays below:
 
@@ -22,12 +20,11 @@ def merge_text_to_image(img: Image, txt: str, bottom_right_txt: str = ' ', top_r
 
     canvas_black, canvas, overlay = load_layers(img)
 
-    img_ = flip_if_necessary(img.convert("RGB"))
-
-    txt2draw, _ = break_text(txt=txt)
-
     txt_, top_right_txt_, bottom_right_txt_ = get_txt_layers(
-        img_=img_, texts=(txt2draw, top_right_txt, bottom_right_txt), txt_brightness=txt_brightness)
+        img_=img, texts=(txt, top_right_txt, bottom_right_txt),
+        txt_brightness=txt_brightness, txt_aspect_ratio=txt_aspect_ratio)
+
+    img_ = flip_if_necessary(img.convert("RGB"))
 
     canvas = merge_layers(bg=canvas, fg=img_,
                           align='TOP_LEFT')
@@ -39,8 +36,8 @@ def merge_text_to_image(img: Image, txt: str, bottom_right_txt: str = ' ', top_r
                           align='TOP_RIGHT_PADDED', padding=padding)
     canvas = merge_layers(bg=canvas, fg=bottom_right_txt_,
                           align='BOTTOM_RIGHT_PADDED', padding=padding)
-    canvas_black = merge_layers(bg=canvas_black, fg=canvas,
-                                align='TOP_LEFT', padding=padding)
+    canvas = merge_layers(bg=canvas_black, fg=canvas,
+                          align='TOP_LEFT', padding=padding)
 
     return canvas.convert('RGB')
 
@@ -66,7 +63,7 @@ def load_layers(img: Image, overlay: str = 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT
     return canvas_black, canvas, overlay_
 
 
-def get_txt_layers(img_: Image, texts: tuple, txt_brightness: float, txt_aspect_ratio: str = 'narrow') -> tuple:
+def get_txt_layers(img_: Image, texts: tuple, txt_brightness: float, txt_aspect_ratio: str = 'NARROW') -> tuple:
 
     txt2draw, top_right_txt, bottom_right_txt = texts
 
@@ -91,10 +88,10 @@ def get_txt_layers(img_: Image, texts: tuple, txt_brightness: float, txt_aspect_
 
 def get_txt_stats(img_: Image, txt_aspect_ratio: str):
 
-    if txt_aspect_ratio == 'narrow':
+    if txt_aspect_ratio == 'NARROW':
         txt_w, txt_h = (0, img_.size[1]*.92)
         ar = 0.3
-    elif txt_aspect_ratio == 'wide':
+    elif txt_aspect_ratio == 'WIDE':
         txt_w, txt_h = (img_.size[0]*.92, 0)
         ar = 3.3
     else:
