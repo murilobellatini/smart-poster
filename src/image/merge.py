@@ -4,10 +4,10 @@ from PIL import Image, ImageEnhance
 from src.image.detect import flip_if_necessary
 from src.image.color import get_contrast_color
 from src.image.draw import draw_text, resize_img
-from src.paths import LOCAL_GLOBAL_DATA, LOCAL_PROCESSED_DATA_PATH
+from src.paths import LOCAL_GLOBAL_DATA
 
 
-def merge_text_to_image(img: Image, txt: str, top_right_txt: str = None, overlay: str = 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT', padding: float = 60, txt_aspect_ratio: float = 0.3, txt_brightness: float = 1, max_words: int = 16):
+def merge_text_to_image(img: Image, txt: str, bottom_right_txt: str = None, top_right_txt: str = None, overlay: str = 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT', padding: float = 60, txt_aspect_ratio: float = 0.3, txt_brightness: float = 1, max_words: int = 16):
     """
     Merges text `txt` to image `img` with possible overlays below:
 
@@ -43,9 +43,14 @@ def merge_text_to_image(img: Image, txt: str, top_right_txt: str = None, overlay
     txt_ = ImageEnhance.Brightness(txt_).enhance((1+txt_brightness))
 
     top_right_txt_ = resize_img(draw_text(f'{top_right_txt}',
-                                          font='Poppins-Light.otf', fontsize=200, fontcolor_hex=txt_color), (400, 0))
+                                          font='Poppins-Light.otf', fontsize=200, fontcolor_hex=txt_color), (0, 40))
     top_right_txt_ = ImageEnhance.Brightness(
         top_right_txt_).enhance((1+txt_brightness))
+
+    bottom_right_txt_ = resize_img(draw_text(f'{bottom_right_txt}',
+                                             font='Poppins-Italic.otf', fontsize=200, fontcolor_hex=txt_color), (0, 40))
+    bottom_right_txt_ = ImageEnhance.Brightness(
+        bottom_right_txt_).enhance((1+txt_brightness))
 
     canvas.paste(img_, (int(canvas.size[0] - img_.size[0]), 0), img_)
     canvas.paste(overlay, (0, 0), overlay)
@@ -56,8 +61,12 @@ def merge_text_to_image(img: Image, txt: str, top_right_txt: str = None, overlay
         canvas.paste(top_right_txt_, (int(img_.size[0]-padding/2-top_right_txt_.size[0]),
                      int(padding/2)), top_right_txt_)
 
+    if bottom_right_txt:
+        canvas.paste(bottom_right_txt_, (int(img_.size[0]-padding/2-bottom_right_txt_.size[0]),
+                     int(img_.size[1]-padding/2-bottom_right_txt_.size[1])), bottom_right_txt_)
+
     canvas_black = Image.open(
-        str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVA_BLACK.png')).convert("RGBA")
+        str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVAS_BLACK.png')).convert("RGBA")
 
     with io.BytesIO() as f:
         canvas.save(f, "PNG")

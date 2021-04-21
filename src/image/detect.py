@@ -72,7 +72,8 @@ def is_left_more_covered(area_distributions: np.array):
 
 def flip_if_necessary(img: Image, min_conf: float = 0.65):
     bboxes = get_obj_bboxes(img)
-    area_dist = object_area_coverage(img, bboxes)
-    if is_left_more_covered(area_dist):
-        img = img.transpose(Image.FLIP_LEFT_RIGHT)
+    if not len(bboxes) == 0:
+        area_dist = object_area_coverage(img, bboxes)
+        if is_left_more_covered(area_dist):
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
     return img.convert("RGBA")

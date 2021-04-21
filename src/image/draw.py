@@ -23,7 +23,7 @@ def draw_text(txt: str, target_ar: float = None, font='Poppins-Bold.otf', fontsi
 
     if target_ar:
         imgs = []
-        for w in range(10, 60, 10):
+        for w in range(10, 60, 5):
             wrapped_txt = textwrap.fill(txt, width=w, break_long_words=False)
             img = draw_text(txt=wrapped_txt, target_ar=None, font=font, fontsize=fontsize,
                             fontcolor_hex=fontcolor_hex, padding=padding, blured_halo=blured_halo)
@@ -89,3 +89,13 @@ def add_blurred_halo(im, blur_radius: int = 10):
     gray_halo = enhancer.enhance(0)
     gray_halo.paste(im, (0, 0), im)
     return gray_halo
+
+
+def draw_brighter_text(txt, xy, font, color, brightness_factor):
+
+    txt_ = resize_img(draw_text(f'{txt}',
+                                font=font, fontsize=200, fontcolor_hex=color), xy)
+    txt_ = ImageEnhance.Brightness(
+        txt_).enhance((1+brightness_factor))
+
+    return txt_
