@@ -1,18 +1,52 @@
-from src.image.merge import compose_creative
-import requests
 from PIL import Image
+from quote import quote
 from src.image.crop import crop
 from src.image.merge import compose_creative
 from src.text.manipulate import break_text
 from src.image.extract import ApiImgExtractor
+from src.image.merge import compose_creative
+
 from src.paths import LOCAL_PROCESSED_DATA_PATH
 
 from src.text.extract import generate_hashtags
 from pathlib import Path
 
 
-def produce_content():
-    pass
+def produce_content(themes: list, posts_per_theme: int, profile_name: str, txt_aspect_ratio: str = "NARROW", format_: str = "PNG", max_words: int = 16, output_size: tuple = (1080, 1080), api_: str = 'unsplash'):
+    content = []
+
+    for t in themes:
+        api = ApiImgExtractor(api_)
+        quotes = quote(t, limit=posts_per_theme)
+        api.query(_search_params={
+            'q': t,
+            'imgType': 'photos'
+        })
+
+        if not quotes:
+            continue
+
+        for i, (q, img_url) in enumerate(zip(quotes, api.img_urls)):
+
+            filepath = LOCAL_PROCESSED_DATA_PATH / f"{t}_{i}.{format_}"
+            filepath_txt = LOCAL_PROCESSED_DATA_PATH / f"{t}_{i}.txt"
+
+            if not q or not img_url:
+                break
+
+            post, caption = build_post(q=q, img_url=img_url, profile_name=profile_name,
+                                       txt_aspect_ratio=txt_aspect_ratio, output_size=output_size, max_words=max_words)
+            export_post(post, filepath)
+            export_caption(caption, filepath_txt)
+
+            content.append({
+                'id': filepath.stem,
+                'theme': t,
+                'filepath': filepath,
+                'filepath_txt': filepath_txt
+            })
+
+    return content
 
 
 def build_post(q: dict, img_url: str, profile_name: str, output_size=(1080, 1080), txt_aspect_ratio: str = 'NARROW', max_words: int = 16):
