@@ -6,15 +6,9 @@ from src.image.color import get_contrast_color, set_img_brightness
 from src.paths import LOCAL_GLOBAL_DATA
 
 
-def merge_text_to_image(img: Image, txt: str, bottom_right_txt: str = ' ', top_right_txt: str = ' ', padding: float = 60, txt_brightness: float = 1, txt_aspect_ratio: str = 'NARROW'):
+def compose_creative(img: Image, txt: str, bottom_right_txt: str = ' ', top_right_txt: str = ' ', padding: float = 60, txt_brightness: float = 1, txt_aspect_ratio: str = 'NARROW'):
     """
     Merges text `txt` to image `img` with possible overlays below:
-
-    - 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT'
-    - 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT_SOFT'
-    - 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT'
-    - 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT'
-
     Output with squared aspect ratio.
     """
 
