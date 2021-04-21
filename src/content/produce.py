@@ -53,7 +53,7 @@ def build_post(q: dict, img_url: str, profile_name: str, output_size=(1080, 1080
 
     img = crop(img_url, export=False, output_size=output_size)
 
-    txt = q.get('quote')
+    txt = q.get('quote').strip()
     tb_txt = 'Unknown Author'
 
     if (q.get('author') != '') and (len(q.get('author').split(' ')) > 1):
