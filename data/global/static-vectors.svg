@@ -69,28 +69,6 @@
     </linearGradient>
     <linearGradient
        inkscape:collect="always"
-       id="linearGradient843">
-      <stop
-         style="stop-color:#000000;stop-opacity:1"
-         offset="0"
-         id="stop839" />
-      <stop
-         style="stop-color:#000000;stop-opacity:0"
-         offset="1"
-         id="stop841" />
-    </linearGradient>
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient843"
-       id="linearGradient845"
-       x1="246.51276"
-       y1="130.85206"
-       x2="532.26281"
-       y2="130.85206"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="translate(-26.726953,-221.29917)" />
-    <linearGradient
-       inkscape:collect="always"
        xlink:href="#linearGradient875"
        id="linearGradient845-6"
        x1="354.73474"
@@ -187,9 +165,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.175"
-     inkscape:cx="1123.6686"
-     inkscape:cy="-848.95915"
+     inkscape:zoom="0.12374369"
+     inkscape:cx="660.23376"
+     inkscape:cy="2675.721"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -198,7 +176,42 @@
      inkscape:window-height="837"
      inkscape:window-x="1912"
      inkscape:window-y="-8"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="1"
+     showguides="true"
+     inkscape:guide-bbox="true">
+    <sodipodi:guide
+       position="0,2524.9589"
+       orientation="1,0"
+       id="guide868" />
+    <sodipodi:guide
+       position="1022.0476,2286.6667"
+       orientation="1,0"
+       id="guide870" />
+    <sodipodi:guide
+       position="-1354.6666,272.80953"
+       orientation="0,-1"
+       id="guide872" />
+    <sodipodi:guide
+       position="-565.45237,-731.09526"
+       orientation="0,-1"
+       id="guide874" />
+    <sodipodi:guide
+       position="344.71428,133.71429"
+       orientation="1,0"
+       id="guide876" />
+    <sodipodi:guide
+       position="-644.07141,-371.26191"
+       orientation="0,-1"
+       id="guide878" />
+    <sodipodi:guide
+       position="411.23809,-77.952383"
+       orientation="1,0"
+       id="guide880" />
+    <sodipodi:guide
+       position="411.23808,-561.76192"
+       orientation="0,-1"
+       id="guide882" />
+  </sodipodi:namedview>
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -216,12 +229,14 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="opacity:0.780645;fill:url(#linearGradient845);fill-opacity:1;stroke:none;stroke-width:15.4573;stroke-linejoin:round;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:15.4573;stroke-linejoin:round;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
        id="rect837"
        width="270.29276"
        height="270.29276"
        x="227.51445"
-       y="-225.59349" />
+       y="-225.59349"
+       inkscape:export-xdpi="101.48997"
+       inkscape:export-ydpi="101.48997" />
     <rect
        style="opacity:0.780645;fill:url(#linearGradient845-6);fill-opacity:1;stroke:none;stroke-width:15.4573;stroke-linejoin:round;stroke-opacity:1;paint-order:stroke fill markers;stop-color:#000000"
        id="rect837-8"

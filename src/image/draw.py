@@ -43,7 +43,7 @@ def draw_text(txt: str, target_ar: float = None, font='Poppins-Bold.otf', fontsi
 def export_txt(txt_img: Image, format: str = "PNG"):
     filename = txt_img.txt.replace(
         '\n', '-').replace(':', '').replace(';', '').replace(',', '').replace('.', '')
-    im.save(LOCAL_RAW_DATA_PATH / f"{filename}.{format}", format)
+    txt_img.save(LOCAL_RAW_DATA_PATH / f"{filename}.{format}", format)
 
 
 def draw_boxes(img: np.ndarray, classIds: np.ndarray, classNames: list, confs: np.ndarray, bbox: np.ndarray):
