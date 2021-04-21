@@ -25,19 +25,19 @@ def detect_objects(img: np.ndarray, thres: float = 0.45):
     return classIds, classNames, confs, bbox
 
 
-def get_obj_bboxes(img: Image, thresh: float = 0.8):
+def get_obj_bboxes(img: Image, thresh: float = 0.55):
     img_ = np.array(img)
 
     bboxes = detect_objects(img_)[-1]
     conf_lvls = detect_objects(img_)[-2]
 
-    filtered_bboxes = np.array([])
+    filtered_bboxes = []
 
     for c, b in zip(conf_lvls, bboxes):
         if c >= thresh:
-            filtered_bboxes = np.append(filtered_bboxes, b)
+            filtered_bboxes.append(b)
 
-    return filtered_bboxes
+    return np.array(filtered_bboxes)
 
 
 def object_area_coverage(img, bboxes):
@@ -51,14 +51,18 @@ def object_area_coverage(img, bboxes):
 
     l_percs = []
     r_percs = []
-
-    for b in bboxes:
-        x, y, w, h = b
-        b_area_tot = w*h
-        b_area_right = max(0, ((x+w)-W/2)*h)
-        b_area_left = b_area_tot - b_area_right
-        l_percs.append(b_area_left/total_area)
-        r_percs.append(b_area_right/total_area)
+    try:
+        for b in bboxes:
+            x, y, w, h = b
+            b_area_tot = w*h
+            b_area_right = max(0, ((x+w)-W/2)*h)
+            b_area_left = b_area_tot - b_area_right
+            l_percs.append(b_area_left/total_area)
+            r_percs.append(b_area_right/total_area)
+    except Exception as e:
+        print('b      :', b)
+        print('bboxes :', bboxes)
+        raise e
 
     return np.array(list(zip(l_percs, r_percs)))
 
