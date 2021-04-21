@@ -43,12 +43,12 @@ def merge_text_to_image(img: Image, txt: str, bottom_right_txt: str = None, top_
     txt_ = ImageEnhance.Brightness(txt_).enhance((1+txt_brightness))
 
     top_right_txt_ = resize_img(draw_text(f'{top_right_txt}',
-                                          font='Poppins-Light.otf', fontsize=200, fontcolor_hex=txt_color), (0, 40))
+                                          font='Poppins-Light.otf', fontsize=200, fontcolor_hex=txt_color), (0, 60))
     top_right_txt_ = ImageEnhance.Brightness(
         top_right_txt_).enhance((1+txt_brightness))
 
     bottom_right_txt_ = resize_img(draw_text(f'{bottom_right_txt}',
-                                             font='Poppins-Italic.otf', fontsize=200, fontcolor_hex=txt_color), (0, 40))
+                                             font='Poppins-Italic.otf', fontsize=200, fontcolor_hex=txt_color), (0, 60))
     bottom_right_txt_ = ImageEnhance.Brightness(
         bottom_right_txt_).enhance((1+txt_brightness))
 
