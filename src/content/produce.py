@@ -32,7 +32,7 @@ class Post():
     def build_post(self) -> tuple:
 
         c = Creative(
-            txt=self.quote.quote,
+            txt=self.quote.main_txt,
             bottom_right_txt=self.quote.author,
             top_right_txt=self.profile_name,
             img_url=self.img_url,
@@ -48,8 +48,8 @@ class Post():
         cta = ['\n']
 
         cta.append(
-            f'{self.quote.source_type.title()}: {self.quote.source.title()}')
-        cta.append(f'Author: {self.quote.author.title()}')
+            f'📕 {self.quote.source_type.title()}: {self.quote.source.title()}')
+        cta.append(f'✍️ Author: {self.quote.author.title()}')
 
         cta.extend([
             '\n💥 Pages for you to like!',
@@ -57,9 +57,9 @@ class Post():
             10*'➖',
             '🤐 Comment 6x with 💪 and like our post! 🤫',
             10*'➖',
-            '❤Like 💬Comment ✔Follow us',
+            '❤️Like 💬Comment 👣Follow us',
             10*'➖',
-            '#️⃣Hashtags:⠀',
+            '#️⃣Hashtags⠀',
         ])
 
         cta.append(' '.join(self.hashtags))

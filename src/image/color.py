@@ -43,7 +43,7 @@ class ColorPicker(ImageWrapper):
 
         return self.dominant_color
 
-    def get_color_palette(self, img: Image, quality: int = 5, color_count: int = 6) -> list:
+    def get_color_palette(self, img: Image, quality: int = 10, color_count: int = 6) -> list:
 
         with io.BytesIO() as file_object:
             img.save(file_object, "PNG")
