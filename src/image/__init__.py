@@ -27,11 +27,14 @@ class ImageWrapper():
         self.img_np = self.img2np(self.img)
 
     def load_url(self, img_url: str) -> None:
-        self.img = Image.open(requests.get(img_url, stream=True).raw)
+        self.img = Image.open(requests.get(
+            img_url, stream=True).raw)
         self.img_np = self.img2np(self.img)
 
-    def set_img_brightness(self, img: Image, bightness_factor: float) -> Image:
-        return ImageEnhance.Brightness(img).enhance((1+bightness_factor))
+    def set_img_brightness(self, bightness_factor: float) -> Image:
+        self.img = ImageEnhance.Brightness(
+            self.img).enhance((1+bightness_factor))
+        return self.img
 
     def img2np(self, img: Image) -> np.array:
         return np.array(img)
@@ -51,4 +54,6 @@ class ImageWrapper():
             else:
                 xy = (xy[0], xy[0]/ar)
 
-        return self.img.resize((int(xy[0]), int(xy[1])))
+        self.img = self.img.resize((int(xy[0]), int(xy[1])))
+
+        return self.img

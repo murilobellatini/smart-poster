@@ -1,4 +1,5 @@
 
+from src.image.color import ColorPicker
 import cv2
 import copy
 import textwrap
@@ -7,17 +8,22 @@ from PIL import Image, ImageDraw, ImageFont, ImageColor, ImageFilter, ImageEnhan
 
 from src.image import ImageWrapper
 from src.helpers import select_closest
-from src.paths import LOCAL_RAW_DATA_PATH
 
 
 class TextDrawer(ImageWrapper):
 
-    def __init__(self, txt: str, font_family='Poppins', font_style='bold', font_size=50, target_ar: float = None, font_color="black", padding: float = 0.5, blured_halo: bool = True):
+    def __init__(self, txt: str, font_family: str = 'Poppins', font_style: str = 'bold', font_color: str = "black", font_size: int = 50, target_ar: float = None, padding: float = 0.2, blured_halo: bool = True):
         self.txt = txt
         self.font_family = font_family
         self.font_style = font_style
         self.font_size = font_size
-        self.font_color = font_color
+
+        if isinstance(font_color, tuple):
+            cp = ColorPicker()
+            self.font_color = cp.rgb2hex(font_color)
+        else:
+            self.font_color = font_color
+
         self.padding = padding
         self.target_ar = target_ar
         self.blured_halo = True

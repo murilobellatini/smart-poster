@@ -53,9 +53,9 @@ class ComputerVision(ImageWrapper):
             if self.is_left_more_covered == keep_left_free:
                 logger.info('Image flipped')
                 return self.img.transpose(Image.FLIP_LEFT_RIGHT).convert("RGBA")
-            else:
-                logger.info('Image not flipped')
-                return self.img.convert("RGBA")
+        else:
+            logger.info('Image not flipped')
+            return self.img.convert("RGBA")
 
     def draw_detection_bboxes(self, thresh: float = 0.65) -> np.array:
 
@@ -99,9 +99,9 @@ class ComputerVision(ImageWrapper):
             result['top_crop']['height'] + result['top_crop']['y']
         )
         cropped_image = self.img.crop(box)
-        self.resized_image = cropped_image.resize(output_size)
+        self.img = cropped_image.resize(output_size)
 
-        return self.resized_image
+        return self.img
 
     def _setup_model(self) -> None:
 

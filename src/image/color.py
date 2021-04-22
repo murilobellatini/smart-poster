@@ -43,7 +43,7 @@ class ColorPicker(ImageWrapper):
 
         return self.dominant_color
 
-    def get_color_palette(self, img: Image, quality: int = 5, color_count: int = 6):
+    def get_color_palette(self, img: Image, quality: int = 5, color_count: int = 6) -> list:
 
         with io.BytesIO() as file_object:
             img.save(file_object, "PNG")
@@ -56,10 +56,10 @@ class ColorPicker(ImageWrapper):
     def rgb2hex(self, rgb: tuple) -> str:
         return rgb2hex_(*(int(c) for c in rgb))
 
-    def get_contrast_color(self, image: Image, sat: float = 1, brightness: float = .5) -> tuple:
-        palette = self.get_color_palette(image.convert("RGBA"))
+    def get_contrast_color(self, sat: float = 1, brightness: float = .5) -> tuple:
+        palette = self.get_color_palette(self.img.convert("RGBA"))
         most_sat_color = self.get_most_saturated_color(palette)
         contrast_color = self.increase_brightness(
-            self.saturate_color(most_sat_color, sat=1), pct=brightness)
+            self.saturate_color(most_sat_color, sat=sat), pct=brightness)
         self.contrast_color = contrast_color
         return self.contrast_color
