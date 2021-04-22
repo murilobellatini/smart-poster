@@ -54,13 +54,19 @@ class ComputerVision():
             logger.info(
                 f'Using available detected objects (count: {len(self.bboxes)}). Minimum confidence level: {self.thresh}')
 
-    def flip_if_necessary(self, thresh: float = 0.65) -> Image:
+    def flip_if_necessary(self, area_to_keep_free: str = 'LEFT', thresh: float = 0.65) -> Image:
+
+        if area_to_keep_free in ('LEFT', 'RIGHT'):
+            keep_left_free = area_to_keep_free == 'LEFT'
+        else:
+            raise NotImplementedError
 
         self.detect_objects(thresh=thresh)
 
         if not len(self.bboxes) == 0:
             self._get_coverage_per_half()
-            if self._check_halfs_coverage():
+            self._check_if_left_more_covered()
+            if self.is_left_more_covered == keep_left_free:
                 logger.info('Image flipped')
                 return self.img.transpose(Image.FLIP_LEFT_RIGHT).convert("RGBA")
             else:
@@ -152,7 +158,7 @@ class ComputerVision():
 
         return self.area_coverages_per_half
 
-    def _check_halfs_coverage(self) -> bool:
+    def _check_if_left_more_covered(self) -> bool:
         if len(self.area_coverages_per_half) == 0:
             return False
         sums = self.area_coverages_per_half.sum(axis=0)
