@@ -6,11 +6,12 @@ from smartcrop import SmartCrop
 
 from src.custom_logging import getLogger
 from src.paths import LOCAL_MODELS_PATH
+from src.image import ImageWrapper
 
 logger = getLogger(__name__)
 
 
-class ComputerVision():
+class ComputerVision(ImageWrapper):
 
     def __init__(self, model: str = "OpenCV_dnn_DetectionModel") -> None:
         if model == "OpenCV_dnn_DetectionModel":
@@ -18,24 +19,6 @@ class ComputerVision():
         else:
             raise NotImplementedError
 
-    def load_img(self, img: Image) -> None:
-        self.img = img
-        self.img_np = self._img2np(self.img)
-        self._setup_model()
-
-    def load_numpy(self, img_np: np.array) -> None:
-        self.img_np = img_np
-        self.img = self._np2img(self.img_np)
-        self._setup_model()
-
-    def load_path(self, img_path: str) -> None:
-        self.img = Image.open(img_path)
-        self.img_np = self._img2np(self.img)
-        self._setup_model()
-
-    def load_url(self, img_url: str) -> None:
-        self.img = Image.open(requests.get(img_url, stream=True).raw)
-        self.img_np = self._img2np(self.img)
         self._setup_model()
 
     def detect_objects(self, thresh: float = 0.65) -> None:
@@ -139,12 +122,6 @@ class ComputerVision():
         self.net = net
 
         logger.info(f'Computer Vision setup with model: `{self.model}`')
-
-    def _img2np(self, img: Image) -> np.array:
-        return np.array(img)
-
-    def _np2img(self, img_np: np.array) -> Image:
-        return Image.fromarray(img_np)
 
     def _get_coverage_per_half(self) -> np.array:
         """

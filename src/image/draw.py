@@ -46,27 +46,6 @@ def export_txt(txt_img: Image, format: str = "PNG"):
     txt_img.save(LOCAL_RAW_DATA_PATH / f"{filename}.{format}", format)
 
 
-def draw_boxes(img: np.ndarray, classIds: np.ndarray, classNames: list, confs: np.ndarray, bbox: np.ndarray):
-
-    img_boxed = img.copy()
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    output_rectangles = np.zeros(img_boxed.shape, dtype="uint8")
-
-    for classId, confidence, box in zip(classIds.flatten(), confs.flatten(), bbox):
-        cv2.rectangle(img_boxed, box, color=(0, 255, 0), thickness=2)
-        cv2.rectangle(gray, box, color=(0, 0, 0), thickness=cv2.FILLED)
-        rectangle = cv2.rectangle(output_rectangles, box, color=(
-            255, 255, 255), thickness=cv2.FILLED)
-        output_rectangles = cv2.bitwise_or(output_rectangles, rectangle)
-        cv2.putText(img_boxed, classNames[classId-1].upper(), (box[0]+10,
-                    box[1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(img_boxed, str(round(confidence*100, 2)),
-                    (box[0]+200, box[1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
-
-    return img_boxed, gray
-
-
 def resize_img(img, xy: tuple):
     """
     Resizes image `img` according to tuple `xy`
