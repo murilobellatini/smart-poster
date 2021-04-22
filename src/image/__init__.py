@@ -38,3 +38,17 @@ class ImageWrapper():
 
     def np2img(self, img_np: np.array) -> Image:
         return Image.fromarray(img_np)
+
+    def resize_img(self, xy: tuple) -> Image:
+        """
+        Resizes image `self.img` according to dimensions `xy`
+        Keeps aspect ratio if one dimension is set to zero.
+        """
+        if min(xy) == 0:
+            ar = self.img.size[0] / self.img.size[1]
+            if xy[0] == 0:
+                xy = (xy[1]*ar, xy[1])
+            else:
+                xy = (xy[0], xy[0]/ar)
+
+        return self.img.resize((int(xy[0]), int(xy[1])))

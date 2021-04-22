@@ -46,21 +46,6 @@ def export_txt(txt_img: Image, format: str = "PNG"):
     txt_img.save(LOCAL_RAW_DATA_PATH / f"{filename}.{format}", format)
 
 
-def resize_img(img, xy: tuple):
-    """
-    Resizes image `img` according to tuple `xy`
-    Keeps aspect ratio if one dimension is set to zero.
-    """
-    if min(xy) == 0:
-        ar = img.size[0] / img.size[1]
-        if xy[0] == 0:
-            xy = (xy[1]*ar, xy[1])
-        else:
-            xy = (xy[0], xy[0]/ar)
-
-    return img.resize((int(xy[0]), int(xy[1])))
-
-
 def add_blurred_halo(im, blur_radius: int = 10):
     blurred_halo = im.filter(ImageFilter.GaussianBlur(blur_radius))
     blurred_halo_ = blurred_halo.convert('RGBA')
