@@ -2,6 +2,7 @@ import cv2
 import requests
 import numpy as np
 from PIL import Image
+from smartcrop import SmartCrop
 
 from src.custom_logging import getLogger
 from src.paths import LOCAL_MODELS_PATH
@@ -103,6 +104,21 @@ class ComputerVision():
         self.img_np_boxed_bw = output_rectangles
 
         return self.img_np_boxed
+
+    def smart_crop(self, output_size: tuple = (1080, 1080)):
+        ratio = output_size[0]/output_size[1]
+        cropper = SmartCrop()
+        result = cropper.crop(self.img, 100*ratio, 100)
+        box = (
+            result['top_crop']['x'],
+            result['top_crop']['y'],
+            result['top_crop']['width'] + result['top_crop']['x'],
+            result['top_crop']['height'] + result['top_crop']['y']
+        )
+        cropped_image = self.img.crop(box)
+        self.resized_image = cropped_image.resize(output_size)
+
+        return self.resized_image
 
     def _setup_model(self) -> None:
 
