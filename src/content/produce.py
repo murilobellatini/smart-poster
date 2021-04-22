@@ -61,7 +61,7 @@ def build_post(q: dict, img_url: str, profile_name: str, output_size=(1080, 1080
     elif q.get('book') != '':
         tb_txt = "Book: " + q['book']
 
-    txt = txt.replace('.', '. ').replace('  ', ' ')
+    txt = txt.replace('.', '. ').replace('  ', ' ').strip()
 
     txt2draw, caption = break_text(txt=txt, word_count=max_words)
 

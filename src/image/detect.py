@@ -1,83 +1,160 @@
 import cv2
+import requests
 import numpy as np
 from PIL import Image
+
+from src.custom_logging import getLogger
 from src.paths import LOCAL_MODELS_PATH
 
-
-def detect_objects(img: np.ndarray, thres: float = 0.45):
-
-    classFile = LOCAL_MODELS_PATH / 'coco.names'
-    configPath = str(LOCAL_MODELS_PATH /
-                     'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt')
-    weightsPath = str(LOCAL_MODELS_PATH / 'frozen_inference_graph.pb')
-
-    with open(classFile, 'rt') as f:
-        classNames = f.read().rstrip('\n').split('\n')
-
-    net = cv2.dnn_DetectionModel(weightsPath, configPath)
-    net.setInputSize(320, 320)
-    net.setInputScale(1.0 / 127.5)
-    net.setInputMean((127.5, 127.5, 127.5))
-    net.setInputSwapRB(True)
-
-    classIds, confs, bbox = net.detect(img, confThreshold=thres)
-
-    return classIds, classNames, confs, bbox
+logger = getLogger(__name__)
 
 
-def get_obj_bboxes(img: Image, thresh: float = 0.55):
-    img_ = np.array(img)
+class ComputerVision():
 
-    bboxes = detect_objects(img_)[-1]
-    conf_lvls = detect_objects(img_)[-2]
+    def __init__(self, model: str = "OpenCV_dnn_DetectionModel") -> None:
+        if model == "OpenCV_dnn_DetectionModel":
+            self.model = model
+        else:
+            raise NotImplementedError
 
-    filtered_bboxes = []
+    def load_img(self, img: Image) -> None:
+        self.img = img
+        self.img_np = self._img2np(self.img)
+        self._setup_model()
 
-    for c, b in zip(conf_lvls, bboxes):
-        if c >= thresh:
-            filtered_bboxes.append(b)
+    def load_numpy(self, img_np: np.array) -> None:
+        self.img_np = img_np
+        self.img = self._np2img(self.img_np)
+        self._setup_model()
 
-    return np.array(filtered_bboxes)
+    def load_path(self, img_path: str) -> None:
+        self.img = Image.open(img_path)
+        self.img_np = self._img2np(self.img)
+        self._setup_model()
 
+    def load_url(self, img_url: str) -> None:
+        self.img = Image.open(requests.get(img_url, stream=True).raw)
+        self.img_np = self._img2np(self.img)
+        self._setup_model()
 
-def object_area_coverage(img, bboxes):
-    """
-    Checks the percentage of each half (left and right)
-    of image `img` is occupied by `bboxes`. Returns tuple of list
-    of percentages for left and right, respectivelly.
-    """
-    W, H = img.size
-    total_area = W * H
+    def detect_objects(self, thresh: float = 0.65) -> None:
 
-    l_percs = []
-    r_percs = []
-    try:
-        for b in bboxes:
-            x, y, w, h = b
-            b_area_tot = w*h
-            b_area_right = max(0, ((x+w)-W/2)*h)
-            b_area_left = b_area_tot - b_area_right
-            l_percs.append(b_area_left/total_area)
-            r_percs.append(b_area_right/total_area)
-    except Exception as e:
-        print('b      :', b)
-        print('bboxes :', bboxes)
-        raise e
+        detection_available = hasattr(self, 'thresh')
 
-    return np.array(list(zip(l_percs, r_percs)))
+        if not detection_available:
+            self.thresh = thresh
 
+        if (self.thresh != thresh) or not detection_available:
+            self.thresh = thresh
+            self.classIds, self.confs, self.bboxes = self.net.detect(
+                self.img_np, confThreshold=thresh)
+            logger.info(
+                f'{len(self.bboxes)} object(s) detected. Minimum confidence level: {thresh}')
+        else:
+            logger.info(
+                f'Using available detected objects (count: {len(self.bboxes)}). Minimum confidence level: {self.thresh}')
 
-def is_left_more_covered(area_distributions: np.array):
-    if len(area_distributions) == 0:
-        return False
-    sums = area_distributions.sum(axis=0)
-    return sums[0] > sums[1]
+    def flip_if_necessary(self, thresh: float = 0.65) -> Image:
 
+        self.detect_objects(thresh=thresh)
 
-def flip_if_necessary(img: Image, min_conf: float = 0.65):
-    bboxes = get_obj_bboxes(img)
-    if not len(bboxes) == 0:
-        area_dist = object_area_coverage(img, bboxes)
-        if is_left_more_covered(area_dist):
-            img = img.transpose(Image.FLIP_LEFT_RIGHT)
-    return img.convert("RGBA")
+        if not len(self.bboxes) == 0:
+            self._get_coverage_per_half()
+            if self._check_halfs_coverage():
+                logger.info('Image flipped')
+                return self.img.transpose(Image.FLIP_LEFT_RIGHT).convert("RGBA")
+            else:
+                logger.info('Image not flipped')
+                return self.img.convert("RGBA")
+
+    def draw_detection_bboxes(self, thresh: float = 0.65) -> np.array:
+
+        self.detect_objects(thresh=thresh)
+
+        if len(self.bboxes) == 0:
+            logger.info(
+                "No objects detected... Aborting drawing of bounding boxes.")
+            return
+
+        img_boxed = self.img_np.copy()
+        gray = cv2.cvtColor(self.img_np, cv2.COLOR_BGR2GRAY)
+
+        output_rectangles = np.zeros(img_boxed.shape, dtype="uint8")
+
+        for classId, confidence, box in zip(self.classIds.flatten(), self.confs.flatten(), self.bboxes):
+            cv2.rectangle(img_boxed, box, color=(0, 255, 0), thickness=2)
+            cv2.rectangle(gray, box, color=(0, 0, 0), thickness=cv2.FILLED)
+            rectangle = cv2.rectangle(output_rectangles, box, color=(
+                255, 255, 255), thickness=cv2.FILLED)
+            output_rectangles = cv2.bitwise_or(output_rectangles, rectangle)
+            cv2.putText(img_boxed, self.classNames[classId-1].upper(), (box[0]+10,
+                        box[1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(img_boxed, str(round(confidence*100, 2)),
+                        (box[0]+200, box[1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+
+        self.img_np_boxed = img_boxed
+        self.img_np_boxed_gray = gray
+        self.img_np_boxed_bw = output_rectangles
+
+        return self.img_np_boxed
+
+    def _setup_model(self) -> None:
+
+        classFile = LOCAL_MODELS_PATH / 'coco.names'
+        configPath = str(LOCAL_MODELS_PATH /
+                         'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt')
+        weightsPath = str(LOCAL_MODELS_PATH / 'frozen_inference_graph.pb')
+
+        with open(classFile, 'rt') as f:
+            self.classNames = f.read().rstrip('\n').split('\n')
+
+        net = cv2.dnn_DetectionModel(weightsPath, configPath)
+        net.setInputSize(320, 320)
+        net.setInputScale(1.0 / 127.5)
+        net.setInputMean((127.5, 127.5, 127.5))
+        net.setInputSwapRB(True)
+
+        self.net = net
+
+        logger.info(f'Computer Vision setup with model: `{self.model}`')
+
+    def _img2np(self, img: Image) -> np.array:
+        return np.array(img)
+
+    def _np2img(self, img_np: np.array) -> Image:
+        return Image.fromarray(img_np)
+
+    def _get_coverage_per_half(self) -> np.array:
+        """
+        Checks the percentage of each half (left and right)
+        of image `img` is occupied by `bboxes`. Returns tuple of list
+        of percentages for left and right, respectivelly.
+        """
+        W, H = self.img.size
+        total_area = W * H
+
+        l_percs = []
+        r_percs = []
+        try:
+            for b in self.bboxes:
+                x, y, w, h = b
+                b_area_tot = w*h
+                b_area_right = max(0, ((x+w)-W/2)*h)
+                b_area_left = b_area_tot - b_area_right
+                l_percs.append(b_area_left/total_area)
+                r_percs.append(b_area_right/total_area)
+        except Exception as e:
+            print('b      :', b)
+            print('bboxes :', self.bboxes)
+            raise e
+
+        self.area_coverages_per_half = np.array(list(zip(l_percs, r_percs)))
+
+        return self.area_coverages_per_half
+
+    def _check_halfs_coverage(self) -> bool:
+        if len(self.area_coverages_per_half) == 0:
+            return False
+        sums = self.area_coverages_per_half.sum(axis=0)
+        self.is_left_more_covered = sums[0] > sums[1]
+        return self.is_left_more_covered
