@@ -1,7 +1,8 @@
+
 from src.text import Quote
 from src.image.merge import Creative
 
-
+from src.text.extract import QuoteExtractor
 from src.image.extract import ApiImgExtractor
 
 from src.paths import LOCAL_PROCESSED_DATA_PATH
@@ -74,50 +75,75 @@ class Post():
 
         return self.creative, self.caption
 
-    def export_post(self, filepath: Path, format_: str = 'PNG'):
+    def export_post(self, filepath: Path, format_: str = 'PNG') -> None:
         self.creative.save(filepath, format_, quality=90)
 
-    def export_caption(self, filepath: Path):
+    def export_caption(self, filepath: Path) -> None:
         with open(filepath, mode='w', encoding='utf8') as fp:
             fp.write(self.caption)
 
 
 class ContentProducer():
-    pass
 
+    def __init__(self, themes: list, posts_per_theme: int,
+                 profile_name: str, txt_aspect_ratio: str = "NARROW",
+                 font_family: str = 'Poppins', font_style: str = 'Bold',
+                 font_color: str = 'AUTO', format_: str = "PNG", max_words: int = 16,
+                 output_size: tuple = (1080, 1080), api_: str = 'unsplash') -> None:
 
-def produce_content(themes: list, posts_per_theme: int, profile_name: str, txt_aspect_ratio: str = "NARROW", format_: str = "PNG", max_words: int = 16, output_size: tuple = (1080, 1080), api_: str = 'unsplash'):
-    content = []
+        self.themes = themes
+        self.posts_per_theme = posts_per_theme
+        self.profile_name = profile_name
+        self.txt_aspect_ratio = txt_aspect_ratio
+        self.format_ = format_
+        self.max_words = max_words
+        self.output_size = output_size
+        self.api_ = api_
+        self.font_family = font_family
+        self.font_style = font_style
+        self.font_color = font_color
 
-    for t in themes:
-        api = ApiImgExtractor(api_)
-        quotes = quote(t, limit=posts_per_theme)
-        api.query(_search_params={
-            'q': t,
-            'imgType': 'photos'
-        })
+    def produce_content(self):
+        content = []
 
-        if not quotes:
-            continue
-
-        for i, (q, img_url) in enumerate(zip(quotes, api.img_urls)):
-
-            filepath = LOCAL_PROCESSED_DATA_PATH / f"{t}_{i}.{format_}"
-            filepath_txt = LOCAL_PROCESSED_DATA_PATH / f"{t}_{i}.txt"
-
-            if not q or not img_url:
-                break
-
-            post, caption = build_post(q=q, img_url=img_url, profile_name=profile_name,
-                                       txt_aspect_ratio=txt_aspect_ratio, output_size=output_size, max_words=max_words)
-            export_post(post, filepath)
-            export_caption(caption, filepath_txt)
-
-            content.append({
-                'id': filepath.stem,
-                'theme': t,
-                'filepath': filepath,
-                'filepath_txt': filepath_txt
+        for t in self.themes:
+            ie = ApiImgExtractor(self.api_)
+            qe = QuoteExtractor(
+                query=t, ext_source='QUOTE_API', limit=self.posts_per_theme)
+            ie.query(_search_params={
+                'q': t,
+                'imgType': 'photos'
             })
 
-    return content
+            if not qe.results:
+                continue
+
+            for i, (q, img_url) in enumerate(zip(qe.results, ie.img_urls)):
+
+                filepath_img = LOCAL_PROCESSED_DATA_PATH / \
+                    f"{t}_{i}.{self.format_}"
+                filepath_txt = LOCAL_PROCESSED_DATA_PATH / f"{t}_{i}.txt"
+
+                if not q or not img_url:
+                    break
+
+                p = Post(quote=q, img_url=img_url,
+                         profile_name=self.profile_name,
+                         output_size=self.output_size,
+                         txt_aspect_ratio=self.txt_aspect_ratio,
+                         font_family=self.font_family,
+                         font_style=self.font_style,
+                         font_color=self.font_color,
+                         )
+
+                p.export_post(filepath_img)
+                p.export_caption(filepath_txt)
+
+                content.append({
+                    'id': filepath_img.stem,
+                    'theme': t,
+                    'filepath': filepath_img,
+                    'filepath_txt': filepath_txt
+                })
+
+        return content

@@ -49,14 +49,13 @@ class Creative(ImageWrapper):
         Merges text `txt` to image `img` with possible overlays below:
         Output with squared aspect ratio.
         """
-
-        canvas_black, canvas, overlay = self.load_layers()
-        txt_, top_right_txt_, bottom_right_txt_ = self.get_txt_layers()
-
         cp = ComputerVision()
         self.img = cp.load_img(self.img)
         self.img = cp.smart_crop(self.output_size)
         self.img = cp.flip_if_necessary()
+
+        canvas_black, canvas, overlay = self.load_layers()
+        txt_, top_right_txt_, bottom_right_txt_ = self.get_txt_layers()
 
         canvas = self.merge_layers(bg=canvas, fg=self.img,
                                    align='TOP_LEFT')

@@ -100,6 +100,7 @@ class ComputerVision(ImageWrapper):
             result['top_crop']['height'] + result['top_crop']['y']
         )
         cropped_image = self.img.crop(box)
+
         self.img = cropped_image.resize(output_size)
 
         return self.img
