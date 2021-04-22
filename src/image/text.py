@@ -12,7 +12,7 @@ from src.helpers import select_closest
 
 class TextDrawer(ImageWrapper):
 
-    def __init__(self, txt: str, font_family: str = 'Poppins', font_style: str = 'bold', font_color: str = "black", font_size: int = 50, target_ar: float = None, padding: float = 0.3, blured_halo: bool = True):
+    def __init__(self, txt: str, font_family: str = 'Poppins', font_style: str = 'bold', font_color: str = "black", font_size: int = 50, target_ar: float = None, padding: float = 0.25, blured_halo: bool = True):
         self.txt = txt
         self.font_family = font_family
         self.font_style = font_style
@@ -26,7 +26,7 @@ class TextDrawer(ImageWrapper):
 
         self.padding = padding
         self.target_ar = target_ar
-        self.blured_halo = True
+        self.blured_halo = blured_halo
 
     def compose_font_path(self, font: str, fontstyle: str, format='otf') -> str:
         self.font_path = f'{font.capitalize()}-{fontstyle.capitalize()}.{format}'
@@ -68,8 +68,7 @@ class TextDrawer(ImageWrapper):
         self.img = im.convert('RGBA')
 
         if self.blured_halo:
-            self.img_halo = self.add_blurred_halo(blur_radius=self.font_size/5)
-            return self.img_halo
+            self.img = self.add_blurred_halo(blur_radius=self.font_size/5)
 
         return self.img
 

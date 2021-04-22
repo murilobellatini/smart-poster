@@ -14,7 +14,7 @@ class Creative(ImageWrapper):
 
     def __init__(self, txt: str, bottom_right_txt: str = ' ', top_right_txt: str = ' ',
                  img: Image = None, img_path: Path = None, img_url: str = None,
-                 img_np: np.array = None, padding: float = 60, txt_brightness: float = 1,
+                 img_np: np.array = None, padding: float = 40, txt_brightness: float = 3,
                  txt_aspect_ratio: str = 'NARROW', font_family: str = 'Poppins',
                  font_style: str = 'bold', font_color: str = 'AUTO', font_size: int = 50,
                  output_size: tuple = (1080, 1080)):
@@ -54,11 +54,11 @@ class Creative(ImageWrapper):
         txt_, top_right_txt_, bottom_right_txt_ = self.get_txt_layers()
 
         cp = ComputerVision()
-        img_ = cp.load_img(self.img)
-        img_ = cp.smart_crop(self.output_size)
-        img_ = cp.flip_if_necessary()
+        self.img = cp.load_img(self.img)
+        self.img = cp.smart_crop(self.output_size)
+        self.img = cp.flip_if_necessary()
 
-        canvas = self.merge_layers(bg=canvas, fg=img_,
+        canvas = self.merge_layers(bg=canvas, fg=self.img,
                                    align='TOP_LEFT')
         canvas = self.merge_layers(bg=canvas, fg=overlay,
                                    align='TOP_RIGHT')
@@ -115,7 +115,7 @@ class Creative(ImageWrapper):
         self.img_txt = td.set_img_brightness(self.txt_brightness)
 
         td = TextDrawer(txt=self.top_right_txt, font_family=self.font_family, font_color=txt_color,
-                        font_style='Light', font_size=200, target_ar=ar)
+                        font_style='Light', font_size=200)
         td.draw_text()
 
         self.img_txt_tr = td.resize_img((0, 0.05*self.img.size[1]))
@@ -123,7 +123,7 @@ class Creative(ImageWrapper):
         self.img_txt_tr = td.set_img_brightness(self.txt_brightness)
 
         td = TextDrawer(txt=self.bottom_right_txt, font_family=self.font_family, font_color=txt_color,
-                        font_style='Italic', font_size=200, target_ar=ar)
+                        font_style='Italic', font_size=200)
         td.draw_text()
 
         self.img_txt_br = td.resize_img((0, 0.05*self.img.size[1]))

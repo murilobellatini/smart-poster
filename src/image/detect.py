@@ -55,7 +55,8 @@ class ComputerVision(ImageWrapper):
                 return self.img.transpose(Image.FLIP_LEFT_RIGHT).convert("RGBA")
         else:
             logger.info('Image not flipped')
-            return self.img.convert("RGBA")
+
+        return self.img.convert("RGBA")
 
     def draw_detection_bboxes(self, thresh: float = 0.65) -> np.array:
 

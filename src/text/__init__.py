@@ -23,9 +23,9 @@ regex = re.compile(
 class Quote():
 
     def __init__(self, quote: str, author: str, source: str, source_type: str, lang: str = 'english'):
-        self.quote = quote
-        self.author = author
-        self.source = source
+        self.quote = quote.replace('.', '. ').replace('  ', ' ').strip()
+        self.author = author if author != '' else 'Unknown Author'
+        self.source = source if source != '' else 'Unknown Source'
         self.source_type = source_type
         self.lang = lang
         self.hashtags = self.generate_hashtags()
