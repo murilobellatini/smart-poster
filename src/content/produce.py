@@ -52,7 +52,8 @@ class Post():
         cta.append(f'✍️ Author: {self.quote.author.title()}')
 
         cta.extend([
-            '\n💥 Pages for you to like!',
+            10*'➖',
+            '💥 Pages for you to like!',
             f'👉 {self.profile_name}',
             10*'➖',
             '🤐 Comment 6x with 💪 and like our post! 🤫',
@@ -66,7 +67,7 @@ class Post():
 
         cta.extend([
             10*'➖',
-            '☆ We wish you a lot of wisdom!'
+            '⭐ We wish you a lot of wisdom!'
         ])
 
         self.caption += '\n'.join(cta)

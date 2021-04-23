@@ -12,7 +12,7 @@ from src.helpers import select_closest
 
 class TextDrawer(ImageWrapper):
 
-    def __init__(self, txt: str, font_family: str = 'Poppins', font_style: str = 'bold', font_color: str = "black", font_size: int = 50, target_ar: float = None, padding: float = 0.25, blured_halo: bool = True):
+    def __init__(self, txt: str, font_family: str = 'Poppins', font_style: str = 'bold', font_color: str = "black", font_size: int = 50, target_ar: float = None, padding: float = 0.25, blured_halo: bool = True, size: tuple = None, txt_brightness: float = None):
         self.txt = txt
         self.font_family = font_family
         self.font_style = font_style
@@ -28,14 +28,21 @@ class TextDrawer(ImageWrapper):
         self.target_ar = target_ar
         self.blured_halo = blured_halo
 
-    def compose_font_path(self, font: str, fontstyle: str, format='otf') -> str:
-        self.font_path = f'{font.capitalize()}-{fontstyle.capitalize()}.{format}'
-        return self.font_path
+        if size:
+            self.font_size = 200
 
-    def draw_text(self) -> Image:
+        self.img = self._draw_text()
+
+        if size:
+            self.img = self.resize_img(xy=size)
+
+        if txt_brightness:
+            self.set_img_brightness(txt_brightness)
+
+    def _draw_text(self) -> Image:
 
         txt = self.txt
-        font = self.compose_font_path(self.font_family, self.font_style)
+        font = self._compose_font_path(self.font_family, self.font_style)
 
         imgfont = ImageFont.truetype(font, self.font_size)
         fontcolor = ImageColor.getcolor(self.font_color, "RGB")
@@ -43,7 +50,8 @@ class TextDrawer(ImageWrapper):
         im_dummy = Image.new("RGBA", (1, 1))
         draw = ImageDraw.Draw(im_dummy)
         W, H = draw.textsize(txt, imgfont)
-        W, H = int(W*(1+self.padding)), int(H*(1+self.padding))
+        # larger padding at height to avoid cropping blurred halo
+        W, H = int(W*(1+self.padding)), int(H*(1+self.padding*1.25))
 
         im = Image.new("RGBA", (W, H))
         draw = ImageDraw.Draw(im)
@@ -56,9 +64,10 @@ class TextDrawer(ImageWrapper):
                 wrapped_txt = textwrap.fill(
                     txt, width=w, break_long_words=False)
 
-                td = TextDrawer(txt=wrapped_txt, font_family=self.font_family, font_style=self.font_style, font_size=self.font_size,
-                                font_color=self.font_color, padding=self.padding, blured_halo=self.blured_halo)
-                img = td.draw_text()
+                img = TextDrawer(txt=wrapped_txt, font_family=self.font_family,
+                                 font_style=self.font_style, font_size=self.font_size,
+                                 font_color=self.font_color, padding=self.padding,
+                                 blured_halo=self.blured_halo).img
 
                 ar = img.size[0] / img.size[1]
                 imgs.append({'width': w, 'aspect_ratio': ar, 'img': img})
@@ -68,11 +77,15 @@ class TextDrawer(ImageWrapper):
         self.img = im.convert('RGBA')
 
         if self.blured_halo:
-            self.img = self.add_blurred_halo(blur_radius=self.font_size/5)
+            self.img = self._add_blurred_halo(blur_radius=self.font_size/5)
 
         return self.img
 
-    def add_blurred_halo(self, blur_radius: int = 10) -> Image:
+    def _compose_font_path(self, font: str, fontstyle: str, format='otf') -> str:
+        self.font_path = f'{font.capitalize()}-{fontstyle.capitalize()}.{format}'
+        return self.font_path
+
+    def _add_blurred_halo(self, blur_radius: int = 10) -> Image:
         blurred_halo = self.img.filter(ImageFilter.GaussianBlur(blur_radius))
         blurred_halo_ = blurred_halo.convert('RGBA')
         enhancer = ImageEnhance.Brightness(blurred_halo_)

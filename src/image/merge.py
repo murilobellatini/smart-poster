@@ -105,29 +105,20 @@ class Creative(ImageWrapper):
         else:
             txt_color = self.font_color
 
-        td = TextDrawer(txt=self.txt, font_family=self.font_family, font_color=txt_color,
-                        font_style=self.font_style, font_size=200, target_ar=ar)
-        td.draw_text()
+        self.img_txt = TextDrawer(txt=self.txt, font_family=self.font_family,
+                                  font_color=txt_color, font_style=self.font_style,
+                                  font_size=200, target_ar=ar, txt_brightness=self.txt_brightness,
+                                  size=(txt_w, txt_h)).img
 
-        self.img_txt = td.resize_img((txt_w, txt_h))
+        self.img_txt_tr = TextDrawer(txt=self.top_right_txt, font_family=self.font_family,
+                                     font_color=txt_color, font_style='Light', padding=.5,
+                                     txt_brightness=self.txt_brightness,
+                                     size=(0, 0.05*self.img.size[1])).img
 
-        self.img_txt = td.set_img_brightness(self.txt_brightness)
-
-        td = TextDrawer(txt=self.top_right_txt, font_family=self.font_family, font_color=txt_color,
-                        font_style='Light', font_size=200)
-        td.draw_text()
-
-        self.img_txt_tr = td.resize_img((0, 0.05*self.img.size[1]))
-
-        self.img_txt_tr = td.set_img_brightness(self.txt_brightness)
-
-        td = TextDrawer(txt=self.bottom_right_txt, font_family=self.font_family, font_color=txt_color,
-                        font_style='Italic', font_size=200)
-        td.draw_text()
-
-        self.img_txt_br = td.resize_img((0, 0.05*self.img.size[1]))
-
-        self.img_txt_br = td.set_img_brightness(self.txt_brightness)
+        self.img_txt_br = TextDrawer(txt=self.bottom_right_txt, font_family=self.font_family,
+                                     font_color=txt_color, font_style='Italic', padding=.5,
+                                     txt_brightness=self.txt_brightness,
+                                     size=(0, 0.05*self.img.size[1])).img
 
         return self.img_txt, self.img_txt_tr, self.img_txt_br
 
