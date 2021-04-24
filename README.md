@@ -17,8 +17,10 @@ Application for generating social media posts automatically. In a smart way 🤓
 * `UNSPLASH_SECRET_KEY`: Secret key for Unsplash API
 * `GCP_KEY`: Google Cloud key with Image Custom Search enabled
 * `GCX`: Google context
+* `FB_ACCESS_TOKEN`: Token for interacting with Facebook Graph API (with basic privileges)
+* `FB_ACCESS_TOKEN_SANDBOX`: Token with advanced privileges for using Marketing API features
 
-Note:
+**Note**
 
 > Alternatively create `.env` file at root of repo for setting env vars.
 
