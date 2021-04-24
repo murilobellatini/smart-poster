@@ -7,14 +7,14 @@ from src import ConfigLoader
 
 class QuoteExtractor(ConfigLoader):
 
-    def __init__(self, query: str, ext_source: str = 'QUOTE_API', limit: int = 10):
+    def __init__(self, query: str, quote_source: str = 'QUOTE_API', limit: int = 10):
 
         super().__init__()
 
         if self.ignore_config:
-            self.ext_source = ext_source
+            self.quote_source = quote_source
 
-        if self.ext_source == 'QUOTE_API':
+        if self.quote_source == 'QUOTE_API':
             results = []
             for r in quote(search=query, limit=limit):
                 q = Quote(

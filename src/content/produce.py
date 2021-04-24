@@ -82,8 +82,8 @@ class Post(ConfigLoader):
 
         return self.creative, self.caption
 
-    def export_post(self, filepath: Path, format_: str = 'PNG') -> None:
-        self.creative.save(filepath, format_, quality=90)
+    def export_post(self, filepath: Path, img_format: str = 'PNG') -> None:
+        self.creative.save(filepath, img_format, quality=90)
 
     def export_caption(self, filepath: Path) -> None:
         with open(filepath, mode='w', encoding='utf8') as fp:
@@ -95,8 +95,8 @@ class ContentProducer(ConfigLoader):
     def __init__(self, themes: list, posts_per_theme: int,
                  profile_name: str, txt_aspect_ratio: str = "NARROW",
                  font_family: str = 'Poppins', font_style: str = 'Bold',
-                 font_color: str = 'AUTO', format_: str = "PNG", max_words: int = 16,
-                 output_size: tuple = (1080, 1080), api_: str = 'unsplash') -> None:
+                 font_color: str = 'AUTO', img_format: str = "PNG", txt_word_count: int = 16,
+                 output_size: tuple = (1080, 1080), img_api: str = 'unsplash') -> None:
 
         super().__init__()
 
@@ -107,10 +107,10 @@ class ContentProducer(ConfigLoader):
 
             self.profile_name = profile_name
             self.txt_aspect_ratio = txt_aspect_ratio
-            self.format_ = format_
-            self.max_words = max_words
+            self.img_format = img_format
+            self.txt_word_count = txt_word_count
             self.output_size = output_size
-            self.api_ = api_
+            self.img_api = img_api
             self.font_family = font_family
             self.font_style = font_style
             self.font_color = font_color
@@ -119,9 +119,9 @@ class ContentProducer(ConfigLoader):
         content = []
 
         for t in self.themes:
-            ie = ApiImgExtractor(self.api_)
+            ie = ApiImgExtractor(self.img_api)
             qe = QuoteExtractor(
-                query=t, ext_source='QUOTE_API', limit=self.posts_per_theme)
+                query=t, quote_source='QUOTE_API', limit=self.posts_per_theme)
             ie.query(_search_params={
                 'q': t,
                 'imgType': 'photos'
@@ -133,7 +133,7 @@ class ContentProducer(ConfigLoader):
             for i, (q, img_url) in enumerate(zip(qe.results, ie.img_urls)):
 
                 filepath_img = LOCAL_PROCESSED_DATA_PATH / \
-                    f"{t}_{i}.{self.format_}"
+                    f"{t}_{i}.{self.img_format}"
                 filepath_txt = LOCAL_PROCESSED_DATA_PATH / f"{t}_{i}.txt"
 
                 if not q or not img_url:
