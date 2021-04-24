@@ -12,7 +12,10 @@ from src.helpers import select_closest
 
 class TextDrawer(ImageWrapper):
 
-    def __init__(self, txt: str, font_family: str = 'Poppins', font_style: str = 'bold', font_color: str = "black", font_size: int = 50, target_ar: float = None, padding: float = 0.25, blured_halo: bool = True, size: tuple = None, txt_brightness: float = None):
+    def __init__(self, txt: str, font_family: str = 'Poppins', font_style: str = 'bold',
+                 font_color: str = "black", font_size: int = 50, target_ar: float = None,
+                 padding_pct: float = 0.25, blurred_halo: bool = True, size: tuple = None,
+                 txt_brightness: float = None):
         self.txt = txt
         self.font_family = font_family
         self.font_style = font_style
@@ -24,9 +27,9 @@ class TextDrawer(ImageWrapper):
         else:
             self.font_color = font_color
 
-        self.padding = padding
+        self.padding_pct = padding_pct
         self.target_ar = target_ar
-        self.blured_halo = blured_halo
+        self.blurred_halo = blurred_halo
 
         if size:
             self.font_size = 200
@@ -50,8 +53,8 @@ class TextDrawer(ImageWrapper):
         im_dummy = Image.new("RGBA", (1, 1))
         draw = ImageDraw.Draw(im_dummy)
         W, H = draw.textsize(txt, imgfont)
-        # larger padding at height to avoid cropping blurred halo
-        W, H = int(W*(1+self.padding)), int(H*(1+self.padding*1.25))
+        # larger padding_pct at height to avoid cropping blurred halo
+        W, H = int(W*(1+self.padding_pct)), int(H*(1+self.padding_pct*1.25))
 
         im = Image.new("RGBA", (W, H))
         draw = ImageDraw.Draw(im)
@@ -66,8 +69,8 @@ class TextDrawer(ImageWrapper):
 
                 img = TextDrawer(txt=wrapped_txt, font_family=self.font_family,
                                  font_style=self.font_style, font_size=self.font_size,
-                                 font_color=self.font_color, padding=self.padding,
-                                 blured_halo=self.blured_halo).img
+                                 font_color=self.font_color, padding_pct=self.padding_pct,
+                                 blurred_halo=self.blurred_halo).img
 
                 ar = img.size[0] / img.size[1]
                 imgs.append({'width': w, 'aspect_ratio': ar, 'img': img})
@@ -76,7 +79,7 @@ class TextDrawer(ImageWrapper):
 
         self.img = im.convert('RGBA')
 
-        if self.blured_halo:
+        if self.blurred_halo:
             self.img = self._add_blurred_halo(blur_radius=self.font_size/5)
 
         return self.img

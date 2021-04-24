@@ -111,12 +111,12 @@ class Creative(ImageWrapper):
                                   size=(txt_w, txt_h)).img
 
         self.img_txt_tr = TextDrawer(txt=self.top_right_txt, font_family=self.font_family,
-                                     font_color=txt_color, font_style='Light', padding=.5,
+                                     font_color=txt_color, font_style='Light', padding_pct=.5,
                                      txt_brightness=self.txt_brightness,
                                      size=(0, 0.05*self.img.size[1])).img
 
         self.img_txt_br = TextDrawer(txt=self.bottom_right_txt, font_family=self.font_family,
-                                     font_color=txt_color, font_style='Italic', padding=.5,
+                                     font_color=txt_color, font_style='Italic', padding_pct=.5,
                                      txt_brightness=self.txt_brightness,
                                      size=(0, 0.05*self.img.size[1])).img
 
