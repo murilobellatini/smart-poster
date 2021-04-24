@@ -19,17 +19,22 @@ class Creative(ImageWrapper):
                  font_style: str = 'bold', font_color: str = 'AUTO', font_size: int = 50,
                  output_size: tuple = (1080, 1080)):
 
+        super().__init__()
+
         self.txt = txt
         self.bottom_right_txt = bottom_right_txt
         self.top_right_txt = top_right_txt
-        self.padding = padding
-        self.txt_brightness = txt_brightness
-        self.txt_aspect_ratio = txt_aspect_ratio
-        self.font_family = font_family
-        self.font_style = font_style
-        self.font_size = font_size
-        self.font_color = font_color
-        self.output_size = output_size
+
+        if self.ignore_config:
+
+            self.padding = padding
+            self.txt_brightness = txt_brightness
+            self.txt_aspect_ratio = txt_aspect_ratio
+            self.font_family = font_family
+            self.font_style = font_style
+            self.font_size = font_size
+            self.font_color = font_color
+            self.output_size = output_size
 
         if img:
             self.load_img(img)

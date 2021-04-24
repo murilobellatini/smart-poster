@@ -10,10 +10,10 @@ from src.image import ImageWrapper
 class ColorPicker(ImageWrapper):
 
     def __init__(self) -> None:
-        pass
+        super().__init__()
 
     def scan_image(self):
-        self.get_contrast_color(self.img)
+        self.get_contrast_color()
         self.get_dominant_color(self.img)
 
     def get_most_saturated_color(self, rgb_palette: list) -> tuple:

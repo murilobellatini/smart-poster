@@ -1,5 +1,6 @@
 import requests
 import numpy as np
+from src import ConfigLoader
 from PIL import Image, ImageEnhance
 
 RESET = '\033[0m'
@@ -9,10 +10,10 @@ def get_color_escape(r, g, b, background=False):
     return '\033[{};2;{};{};{}m'.format(48 if background else 38, r, g, b)
 
 
-class ImageWrapper():
+class ImageWrapper(ConfigLoader):
 
     def __init__(self):
-        pass
+        super().__init__()
 
     def load_img(self, img: Image) -> None:
         self.img = img

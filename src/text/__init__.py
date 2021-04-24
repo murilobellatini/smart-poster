@@ -7,6 +7,8 @@ import gensim
 import string
 import re
 
+from src import ConfigLoader
+
 download('stopwords')
 download('wordnet')
 
@@ -20,14 +22,20 @@ regex = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-class Quote():
+class Quote(ConfigLoader):
 
-    def __init__(self, quote: str, author: str, source: str, source_type: str, lang: str = 'english'):
+    def __init__(self, quote: str, author: str, source: str,
+                 source_type: str, lang: str = 'english'):
+
+        super().__init__()
+
+        if self.ignore_config:
+            self.lang = lang
+
         self.quote = quote.replace('.', '. ').replace('  ', ' ').strip()
         self.author = author if author != '' else 'Unknown Author'
         self.source = source if source != '' else 'Unknown Source'
         self.source_type = source_type
-        self.lang = lang
         self.hashtags = self.generate_hashtags()
         self.word_count = len(self.quote.split(' '))
         self.main_txt, self.caption = self.break_text()

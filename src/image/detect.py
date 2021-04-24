@@ -14,6 +14,12 @@ logger = getLogger(__name__)
 class ComputerVision(ImageWrapper):
 
     def __init__(self, model: str = "OpenCV_dnn_DetectionModel") -> None:
+
+        super().__init__()
+
+        if self.ignore_config:
+            self.model = model
+
         if model == "OpenCV_dnn_DetectionModel":
             self.model = model
         else:

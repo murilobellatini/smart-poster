@@ -1,5 +1,5 @@
-
 from src.text import Quote
+from src import ConfigLoader
 from src.image.merge import Creative
 
 from src.text.extract import QuoteExtractor
@@ -10,20 +10,26 @@ from src.paths import LOCAL_PROCESSED_DATA_PATH
 from pathlib import Path
 
 
-class Post():
+class Post(ConfigLoader):
 
-    def __init__(self, quote: Quote, img_url: str, profile_name: str,
+    def __init__(self, quote: Quote, img_url: str, profile_name: str = ' ',
                  output_size: tuple = (1080, 1080), txt_aspect_ratio: str = 'NARROW',
                  font_family: str = 'Poppins', font_style: str = 'Bold',
                  font_color: str = 'AUTO') -> None:
+
+        super().__init__()
+
         self.quote = quote
         self.img_url = img_url
-        self.profile_name = profile_name
-        self.output_size = output_size
-        self.txt_aspect_ratio = txt_aspect_ratio
-        self.font_family = font_family
-        self.font_style = font_style
-        self.font_color = font_color
+
+        if self.ignore_config:
+            self.profile_name = profile_name
+            self.output_size = output_size
+            self.txt_aspect_ratio = txt_aspect_ratio
+            self.font_family = font_family
+            self.font_style = font_style
+            self.font_color = font_color
+
         self.caption = quote.caption
         self.hashtags = quote.hashtags
         self.txt2draw = quote.main_txt
@@ -84,7 +90,7 @@ class Post():
             fp.write(self.caption)
 
 
-class ContentProducer():
+class ContentProducer(ConfigLoader):
 
     def __init__(self, themes: list, posts_per_theme: int,
                  profile_name: str, txt_aspect_ratio: str = "NARROW",
@@ -92,17 +98,22 @@ class ContentProducer():
                  font_color: str = 'AUTO', format_: str = "PNG", max_words: int = 16,
                  output_size: tuple = (1080, 1080), api_: str = 'unsplash') -> None:
 
+        super().__init__()
+
         self.themes = themes
         self.posts_per_theme = posts_per_theme
-        self.profile_name = profile_name
-        self.txt_aspect_ratio = txt_aspect_ratio
-        self.format_ = format_
-        self.max_words = max_words
-        self.output_size = output_size
-        self.api_ = api_
-        self.font_family = font_family
-        self.font_style = font_style
-        self.font_color = font_color
+
+        if self.ignore_config:
+
+            self.profile_name = profile_name
+            self.txt_aspect_ratio = txt_aspect_ratio
+            self.format_ = format_
+            self.max_words = max_words
+            self.output_size = output_size
+            self.api_ = api_
+            self.font_family = font_family
+            self.font_style = font_style
+            self.font_color = font_color
 
     def produce_content(self):
         content = []

@@ -1,4 +1,7 @@
 {
+  "ignore_config": false,
+  "lang": "english",
+  "ext_source": "QUOTE_API",
   "profile_name": "@the.wisdom.drops",
   "output_size": [1080, 1080],
   "txt_aspect_ratio": "NARROW",
@@ -14,7 +17,7 @@
   "quality": "[IGNORE]",
   "color_count": "[IGNORE]",
   "brightness": "[IGNORE]",
-  "thresh": 0.65,
+  "thresh": "[IGNORE]",
   "area_to_keep_free": "LEFT",
   "bottom_right_txt": " ",
   "top_right_txt": " ",

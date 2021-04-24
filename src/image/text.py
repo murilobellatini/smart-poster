@@ -16,6 +16,7 @@ class TextDrawer(ImageWrapper):
                  font_color: str = "black", font_size: int = 50, target_ar: float = None,
                  padding_pct: float = 0.25, blurred_halo: bool = True, size: tuple = None,
                  txt_brightness: float = None):
+
         self.txt = txt
         self.font_family = font_family
         self.font_style = font_style
