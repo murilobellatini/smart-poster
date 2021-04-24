@@ -20,11 +20,11 @@ Application for generating social media posts automatically. In a smart way 🤓
 
 Note:
 
-> Alternatively creat `.env` file at root of repo for setting env vars.
+> Alternatively create `.env` file at root of repo for setting env vars.
 
 #### Credentials
 
-* `/credentials/gcloud.json`: Place here the json file for Google Cloud Service Account.
+* `./credentials/gcloud.json`: Place here the json file for Google Cloud Service Account.
 
 
 ### Step-by-step
@@ -35,7 +35,7 @@ Note:
 ```bash
 cd <REPO_ROOT_PATH>
 pipenv shell
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
 3. Run Jupyter Notebooks at will
