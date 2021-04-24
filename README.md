@@ -19,7 +19,8 @@ Application for generating social media posts automatically. In a smart way 🤓
 * `GCX`: Google context
 * `FB_ACCESS_TOKEN`: Token for interacting with Facebook Graph API (with basic privileges)
 * `FB_ACCESS_TOKEN_SANDBOX`: Token with advanced privileges for using Marketing API features
-
+* `AD_ACCOUNT_ID`: Account ID for interacting with Business Data
+* 
 **Note**
 
 > Alternatively create `.env` file at root of repo for setting env vars.
