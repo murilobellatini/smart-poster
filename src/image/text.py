@@ -8,6 +8,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageColor, ImageFilter, ImageEnhan
 
 from src.image import ImageWrapper
 from src.helpers import select_closest
+from src.paths import LOCAL_GLOBAL_DATA
 
 
 class TextDrawer(ImageWrapper):
@@ -85,8 +86,9 @@ class TextDrawer(ImageWrapper):
 
         return self.img
 
-    def _compose_font_path(self, font: str, fontstyle: str, format='otf') -> str:
-        self.font_path = f'{font.capitalize()}-{fontstyle.capitalize()}.{format}'
+    def _compose_font_path(self, font: str, fontstyle: str, format='ttf') -> str:
+        font_name = f'{font.capitalize()}-{fontstyle.capitalize()}.{format}'
+        self.font_path = str(LOCAL_GLOBAL_DATA / f'fonts/{font_name}')
         return self.font_path
 
     def _add_blurred_halo(self, blur_radius: int = 10) -> Image:
