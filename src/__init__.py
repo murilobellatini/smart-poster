@@ -24,7 +24,7 @@ class ConfigLoader():
 
         for k, v in self.config.items():
 
-            if v == "[IGNORE]":
+            if v == "[IGNORE]" or k.endswith('_VALUES'):
                 continue
 
             setattr(self, k, v)

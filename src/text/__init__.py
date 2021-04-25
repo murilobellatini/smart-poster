@@ -5,12 +5,14 @@ from gensim import corpora
 from nltk import download
 import gensim
 import string
+import spacy
 import re
 
 from src import ConfigLoader
 
 download('stopwords')
 download('wordnet')
+nlp = spacy.load('en_core_web_sm')
 
 regex = re.compile(
     r'^(?:http|ftp)s?://'  # http:// or https://
@@ -32,7 +34,8 @@ class Quote(ConfigLoader):
         if self.ignore_config:
             self.lang = lang
 
-        self.quote = quote.replace('.', '. ').replace('  ', ' ').strip()
+        self.quote = re.sub(r'(\.|\,)', r'\1 ', quote).replace(
+            '  ', ' ').capitalize().strip()
         self.author = author if author != '' else 'Unknown Author'
         self.source = source if source != '' else 'Unknown Source'
         self.source_type = source_type
@@ -51,6 +54,25 @@ class Quote(ConfigLoader):
             'source_type': self.source_type,
             'lang': self.lang,
         }
+
+    def filter_tags(self, from_: str = "main_txt", title: bool = False, tags: list = ['NOUN']):
+
+        if from_ == "main_txt":
+            txt = self.main_txt
+        elif from_ == "quote":
+            txt = self.quote
+        else:
+            raise NotImplementedError
+
+        if title:
+            txt = txt.title()
+
+        output = []
+
+        doc = nlp(txt)
+        output = [token for token in doc if token.pos_ in tags]
+
+        return output
 
     def generate_hashtags(self, num_topics: int = 10, passes: int = 3) -> list:
 

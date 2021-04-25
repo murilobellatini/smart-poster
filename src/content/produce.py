@@ -1,7 +1,8 @@
+import random
+
 from src.text import Quote
 from src import ConfigLoader
 from src.image.merge import Creative
-
 from src.text.extract import QuoteExtractor
 from src.image.extract import ApiImgExtractor
 
@@ -92,8 +93,8 @@ class Post(ConfigLoader):
 
 class ContentProducer(ConfigLoader):
 
-    def __init__(self, themes: list, posts_per_theme: int,
-                 profile_name: str, txt_aspect_ratio: str = "NARROW",
+    def __init__(self, themes: list, posts_per_theme: int, img_search: str = 'THEME_BASED',
+                 profile_name: str = ' ', txt_aspect_ratio: str = "NARROW",
                  font_family: str = 'Poppins', font_style: str = 'Bold',
                  font_color: str = 'AUTO', img_format: str = "PNG", txt_word_count: int = 16,
                  output_size: tuple = (1080, 1080), img_api: str = 'unsplash') -> None:
@@ -114,6 +115,7 @@ class ContentProducer(ConfigLoader):
             self.font_family = font_family
             self.font_style = font_style
             self.font_color = font_color
+            self.img_search = img_search
 
     def produce_content(self):
         content = []
@@ -122,15 +124,35 @@ class ContentProducer(ConfigLoader):
             ie = ApiImgExtractor(self.img_api)
             qe = QuoteExtractor(
                 query=t, quote_source='QUOTE_API', limit=self.posts_per_theme)
-            ie.query(_search_params={
-                'q': t,
-                'imgType': 'photos'
-            })
+
+            if self.img_search == "THEME_BASED":
+                ie.query(_search_params={
+                    'q': t,
+                    'imgType': 'photos'
+                })
 
             if not qe.results:
                 continue
 
-            for i, (q, img_url) in enumerate(zip(qe.results, ie.img_urls)):
+            for i, q in enumerate(qe.results):
+
+                if self.img_search == "THEME_BASED":
+                    img_url = list(ie.img_urls)[i]
+                elif self.img_search == "QUOTE_BASED":
+                    tokens = q.filter_tags(tags="NOUN")
+                    if not tokens:
+                        tokens = q.filter_tags(tags="NOUN", title=True)
+                    if not tokens:
+                        tokens = [t]
+
+                    ie = ApiImgExtractor(self.img_api)
+                    ie.query(_search_params={
+                        'q': random.choice(tokens),
+                        'imgType': 'photos'
+                    })
+                    img_url = list(ie.img_urls)[0]
+                else:
+                    raise NotImplementedError
 
                 filepath_img = LOCAL_PROCESSED_DATA_PATH / \
                     f"{t}_{i}.{self.img_format}"
