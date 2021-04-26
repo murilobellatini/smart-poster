@@ -9,6 +9,7 @@ import spacy
 import re
 
 from src import ConfigLoader
+from src.helpers import get_hashed_str
 
 download('stopwords')
 download('wordnet')
@@ -37,6 +38,7 @@ class Quote(ConfigLoader):
         q = re.sub(r'(\.|\,|;)', r'\1 ', quote).replace(
             '  ', ' ').capitalize().strip()
         self.quote = '. '.join(i.capitalize() for i in q.split('. '))
+        self.id = get_hashed_str(self.quote)
         self.author = author if author != '' else 'Unknown Author'
         self.source = source if source != '' else 'Unknown Source'
         self.source_type = source_type

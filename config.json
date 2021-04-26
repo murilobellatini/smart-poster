@@ -1,6 +1,7 @@
 {
   "ignore_config": false,
-  "ignore_config_VALUES": [true, false],
+  "ignore_used_quotes": true,
+  "ignore_used_imgs": true,
   "lang": "english",
   "lang_VALUES": ["english"],
   "quote_source": "QUOTE_API",

@@ -3,12 +3,15 @@ import random
 from src.text import Quote
 from src import ConfigLoader
 from src.image.merge import Creative
+from src.custom_logging import getLogger
 from src.text.extract import QuoteExtractor
 from src.image.extract import ApiImgExtractor
 
 from src.paths import LOCAL_PROCESSED_DATA_PATH
 
 from pathlib import Path
+
+logger = getLogger(__name__)
 
 
 class Post(ConfigLoader):
@@ -81,7 +84,10 @@ class Post(ConfigLoader):
 
         self.caption = self.caption.strip()
 
-        with open(LOCAL_PROCESSED_DATA_PATH / "USED_URLS/used_img_urls.txt", "a") as fp:
+        with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_quotes.txt", "a") as fp:
+            fp.write(f'{self.quote.id},"{self.quote.main_txt}"\n')
+
+        with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_img_urls.txt", "a") as fp:
             fp.write(self.img_url + '\n')
 
         return self.creative, self.caption
@@ -145,11 +151,13 @@ class ContentProducer(ConfigLoader):
                 if self.img_search == "THEME_BASED":
                     img_url = list(ie.img_urls)[i]
                 elif self.img_search == "QUOTE_BASED":
-                    tokens = q.filter_tags(tags="NOUN")
-                    if not tokens:
-                        tokens = q.filter_tags(tags="NOUN", title=True)
-                    if not tokens:
-                        tokens = [t]
+
+                    tokens = [str(t) for t in set(
+                              q.filter_tags(tags="NOUN") +
+                              q.filter_tags(tags="NOUN", title=True) +
+                              q.filter_tags(tags="PROPN") +
+                              q.filter_tags(tags="VERB") +
+                              [t])]
 
                     ie = ApiImgExtractor(self.img_api)
                     while not ie.img_urls:
@@ -160,6 +168,10 @@ class ContentProducer(ConfigLoader):
                             'return_count': self.posts_per_theme,
                         })
                         tokens.remove(chosen_t)
+                        if not tokens:
+                            logger.error(
+                                "No image available for any the text options... Skipping creative.")
+                            continue
                     img_url = list(ie.img_urls)[0]
                 else:
                     raise NotImplementedError

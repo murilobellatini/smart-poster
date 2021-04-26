@@ -1,4 +1,5 @@
 import os
+from src import ConfigLoader
 from pyunsplash import PyUnsplash
 from google_images_search import GoogleImagesSearch
 
@@ -22,9 +23,11 @@ api_instances = {
 }
 
 
-class ApiImgExtractor():
+class ApiImgExtractor(ConfigLoader):
 
     def __init__(self, api: str, ignore_used_imgs: bool = True) -> None:
+
+        super().__init__()
 
         if api not in api_instances.keys():
             raise NotImplementedError
@@ -33,7 +36,9 @@ class ApiImgExtractor():
         self.api_instance = api_instances[self.api]
         self.img_urls = set()  # all found image urls (accumulated)
         self.curr_img_urls = set()  # image urls from current pagination only
-        self.ignore_used_imgs = ignore_used_imgs
+
+        if self.ignore_config:
+            self.ignore_used_imgs = ignore_used_imgs
 
     def query(self, _search_params: dict) -> None:
         """
@@ -53,25 +58,30 @@ class ApiImgExtractor():
         img_urls_to_ignore = []
 
         if self.ignore_used_imgs:
-            used_imgs_path = LOCAL_PROCESSED_DATA_PATH / "USED_URLS/used_img_urls.txt"
+            used_imgs_path = LOCAL_PROCESSED_DATA_PATH / "used_data/used_img_urls.txt"
             if used_imgs_path.is_file():
                 with open(used_imgs_path, mode="r") as fp:
                     img_urls_to_ignore = fp.read().splitlines()
 
         if self.api == 'unsplash':
-            while not self.img_urls:
+            i = 0
+            while not self.curr_img_urls:
                 try:
                     self.cursor = self.api_instance.search(
                         type_=_search_params['imgType'], query=_search_params['q'])  # @todo: generalize for `collections` and `users`
+                    self._update_img_urls(
+                        img_urls_to_ignore=img_urls_to_ignore,
+                        min_return_count=_search_params.get('return_count')
+                    )
+                    i += 1
+                    if i == 7:
+                        logger.error(
+                            f"7  Attempts made to retrieve Images  for query `_search_params['q']` with no results. Aborting process.")
+                        break
                 except Exception as e:
                     logger.error(
                         f'Image API `{self.api}` returned error. Probably quota has been exceeded... Waiting 10 min to retry request.')
                     sleep(60*10)
-
-            self._update_img_urls(
-                img_urls_to_ignore=img_urls_to_ignore,
-                min_return_count=_search_params.get('return_count')
-            )
 
         elif self.api == 'google':
             self.api_instance.search(
@@ -104,7 +114,7 @@ class ApiImgExtractor():
                 self.paginate_results(ignore_img_update=True)
             except Exception as e:
                 logger.error(
-                    'Pagination failed. Skipping process. `self.img_urls` might be unstable;')
+                    f'Pagination failed. Skipping process. `self.img_urls` might be unstable.\nError {e} ')
                 break
 
     def paginate_results(self, ignore_img_update: bool = False) -> None:
