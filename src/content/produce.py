@@ -81,6 +81,9 @@ class Post(ConfigLoader):
 
         self.caption = self.caption.strip()
 
+        with open(LOCAL_PROCESSED_DATA_PATH / "USED_URLS/used_img_urls.txt", "a") as fp:
+            fp.write(self.img_url + '\n')
+
         return self.creative, self.caption
 
     def export_post(self, filepath: Path, img_format: str = 'PNG') -> None:
@@ -119,8 +122,10 @@ class ContentProducer(ConfigLoader):
 
     def produce_content(self):
         content = []
+        img_urls_to_ignore = []
 
         for t in self.themes:
+
             ie = ApiImgExtractor(self.img_api)
             qe = QuoteExtractor(
                 query=t, quote_source='QUOTE_API', limit=self.posts_per_theme)
@@ -128,7 +133,8 @@ class ContentProducer(ConfigLoader):
             if self.img_search == "THEME_BASED":
                 ie.query(_search_params={
                     'q': t,
-                    'imgType': 'photos'
+                    'imgType': 'photos',
+                    'return_count': self.posts_per_theme,
                 })
 
             if not qe.results:
@@ -148,7 +154,8 @@ class ContentProducer(ConfigLoader):
                     ie = ApiImgExtractor(self.img_api)
                     ie.query(_search_params={
                         'q': random.choice(tokens),
-                        'imgType': 'photos'
+                        'imgType': 'photos',
+                        'return_count': self.posts_per_theme,
                     })
                     img_url = list(ie.img_urls)[0]
                 else:

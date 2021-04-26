@@ -34,7 +34,7 @@ class Quote(ConfigLoader):
         if self.ignore_config:
             self.lang = lang
 
-        q = re.sub(r'(\.|\,)', r'\1 ', quote).replace(
+        q = re.sub(r'(\.|\,|;)', r'\1 ', quote).replace(
             '  ', ' ').capitalize().strip()
         self.quote = '. '.join(i.capitalize() for i in q.split('. '))
         self.author = author if author != '' else 'Unknown Author'
