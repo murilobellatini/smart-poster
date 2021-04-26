@@ -17,3 +17,9 @@ def get_hashed_str(txt: str, method: str = "MD5"):
         raise NotImplementedError
 
     return hashed.hexdigest()
+
+
+def capitalize_first_letter(txt: str) -> str:
+    if len(txt) > 0:
+        txt = f'{txt[0].upper()}{txt[1:]}'
+    return txt

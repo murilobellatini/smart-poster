@@ -9,11 +9,14 @@ import spacy
 import re
 
 from src import ConfigLoader
-from src.helpers import get_hashed_str
+from src.custom_logging import getLogger
+from src.helpers import get_hashed_str, capitalize_first_letter
 
 download('stopwords')
 download('wordnet')
 nlp = spacy.load('en_core_web_sm')
+
+logger = getLogger(__name__)
 
 regex = re.compile(
     r'^(?:http|ftp)s?://'  # http:// or https://
@@ -36,8 +39,9 @@ class Quote(ConfigLoader):
             self.lang = lang
 
         q = re.sub(r'(\.|\,|;)', r'\1 ', quote).replace(
-            '  ', ' ').capitalize().strip()
-        self.quote = '. '.join(i.capitalize() for i in q.split('. '))
+            '  ', ' ').strip()
+        self.quote = '. '.join(capitalize_first_letter(i)
+                               for i in q.split('. '))
         self.id = get_hashed_str(self.quote)
         self.author = author if author != '' else 'Unknown Author'
         self.source = source if source != '' else 'Unknown Source'
@@ -50,6 +54,8 @@ class Quote(ConfigLoader):
         return f"<Quote author:`{self.author}` source:`{self.source}` quote_prev:`{self.quote[:15]}...`>"
 
     def to_dict(self):
+        logger.debug(f'Converting Quote to Text...')
+
         return {
             'quote': self.quote,
             'author': self.author,
@@ -59,6 +65,7 @@ class Quote(ConfigLoader):
         }
 
     def filter_tags(self, from_: str = "main_txt", title: bool = False, tags: list = ['NOUN']):
+        logger.debug(f'Filtering Quote\'s tags...')
 
         if from_ == "main_txt":
             txt = self.main_txt
@@ -78,6 +85,7 @@ class Quote(ConfigLoader):
         return output
 
     def generate_hashtags(self, num_topics: int = 10, passes: int = 3) -> list:
+        logger.debug(f'Generating Quote\'s hashtags...')
 
         text = ' '.join(self.to_dict().values())
 
@@ -113,6 +121,8 @@ class Quote(ConfigLoader):
         return self.hashtags
 
     def break_text(self, word_count: int = 16):
+        logger.debug(f'Breaking Quote\'s text into main the rest...')
+
         quote_words = self.quote.strip().split(' ')
         main_txt = ' '.join(quote_words[:word_count])
         caption = ''

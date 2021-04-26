@@ -19,6 +19,14 @@ class QuoteExtractor(ConfigLoader):
             self.quote_source = quote_source
             self.ignore_used_quotes = ignore_used_quotes
 
+        self.query = query
+        self.limit = limit
+
+        self._extract_quotes()
+
+    def _extract_quotes(self) -> None:
+        logger.debug(f'Extracting quotes from `{self.quote_source}`...')
+
         quotes_to_ignore = []
 
         if self.ignore_used_quotes:
@@ -30,7 +38,7 @@ class QuoteExtractor(ConfigLoader):
 
         if self.quote_source == 'QUOTE_API':
             results = []
-            for r in quote(search=query, limit=limit):
+            for r in quote(search=self.query, limit=self.limit):
                 q = Quote(
                     author=r.get('author'),
                     quote=r.get('quote'),

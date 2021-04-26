@@ -23,10 +23,13 @@ class Post(ConfigLoader):
 
         super().__init__()
 
+        logger.debug('Constructing Post...')
+
         self.quote = quote
         self.img_url = img_url
 
         if self.ignore_config:
+            logger.debug('Loading data from `config.json` file')
             self.profile_name = profile_name
             self.output_size = output_size
             self.txt_aspect_ratio = txt_aspect_ratio
@@ -40,6 +43,8 @@ class Post(ConfigLoader):
         self.creative, self.caption = self.build_post()
 
     def build_post(self) -> tuple:
+
+        logger.debug('Building Post...')
 
         c = Creative(
             txt=self.quote.main_txt,
@@ -102,9 +107,13 @@ class Post(ConfigLoader):
         with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_img_urls.txt", "a") as fp:
             fp.write(self.img_url + '\n')
 
+        logger.debug('Post built successfully...')
+
         return self.creative, self.caption
 
     def get_wiki_url(self, query: str) -> str:
+
+        logger.debug(f'Getting Wiki URL for query `{query}`...')
 
         if not "Unknown" in query:
             results = wikipedia.search(query)
@@ -114,13 +123,15 @@ class Post(ConfigLoader):
                     break
                 except Exception as e:
                     logger.error(
-                        f'Exception thrown. Skipping result...\n`{e}`')
+                        f'Exception thrown for `{r}`. Skipping result...\n`{e}`')
             return p.url
 
     def export_post(self, filepath: Path, img_format: str = 'PNG') -> None:
+        logger.debug(f'Exporting post to {filepath}...')
         self.creative.save(filepath, img_format, quality=90)
 
     def export_caption(self, filepath: Path) -> None:
+        logger.debug(f'Exporting caption to {filepath}...')
         with open(filepath, mode='w', encoding='utf8') as fp:
             fp.write(self.caption)
 

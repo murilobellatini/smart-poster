@@ -4,7 +4,10 @@ import requests
 from hashlib import sha256
 from functools import wraps
 
+from src.custom_logging import getLogger
 from src.credentials import AD_ACCOUNT_ID, API_VERSION, FB_ACCESS_TOKEN_SANDBOX
+
+logger = getLogger(__name__)
 
 
 class SocialMediaInteractor():

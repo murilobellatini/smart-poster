@@ -6,9 +6,12 @@ import textwrap
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageColor, ImageFilter, ImageEnhance
 
-from src.image import ImageWrapper
-from src.helpers import select_closest
+from src.custom_logging import getLogger
 from src.paths import LOCAL_GLOBAL_DATA
+from src.helpers import select_closest
+from src.image import ImageWrapper
+
+logger = getLogger(__name__)
 
 
 class TextDrawer(ImageWrapper):
@@ -45,6 +48,7 @@ class TextDrawer(ImageWrapper):
             self.set_img_brightness(txt_brightness)
 
     def _draw_text(self) -> Image:
+        logger.debug(f'Drawing text image...')
 
         txt = self.txt
         font = self._compose_font_path(self.font_family, self.font_style)
@@ -87,11 +91,15 @@ class TextDrawer(ImageWrapper):
         return self.img
 
     def _compose_font_path(self, font: str, fontstyle: str, format='ttf') -> str:
+        logger.debug(f'Composing font path...')
+
         font_name = f'{font.capitalize()}-{fontstyle.capitalize()}.{format}'
         self.font_path = str(LOCAL_GLOBAL_DATA / f'fonts/{font_name}')
         return self.font_path
 
     def _add_blurred_halo(self, blur_radius: int = 10) -> Image:
+        logger.debug(f'Adding blurred halo to text...')
+
         blurred_halo = self.img.filter(ImageFilter.GaussianBlur(blur_radius))
         blurred_halo_ = blurred_halo.convert('RGBA')
         enhancer = ImageEnhance.Brightness(blurred_halo_)

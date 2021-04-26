@@ -38,14 +38,14 @@ class ComputerVision(ImageWrapper):
             self.thresh = thresh
             self.classIds, self.confs, self.bboxes = self.net.detect(
                 self.img_np, confThreshold=thresh)
-            logger.info(
+            logger.debug(
                 f'{len(self.bboxes)} object(s) detected. Minimum confidence level: {thresh}')
         else:
-            logger.info(
+            logger.debug(
                 f'Using available detected objects (count: {len(self.bboxes)}). Minimum confidence level: {self.thresh}')
 
     def flip_if_necessary(self, area_to_keep_free: str = 'LEFT', thresh: float = 0.65) -> Image:
-
+        logger.debug(f'Checking if image must be flipped...')
         if area_to_keep_free in ('LEFT', 'RIGHT'):
             keep_left_free = area_to_keep_free == 'LEFT'
         else:
@@ -57,19 +57,20 @@ class ComputerVision(ImageWrapper):
             self._get_coverage_per_half()
             self._check_if_left_more_covered()
             if self.is_left_more_covered == keep_left_free:
-                logger.info('Image flipped')
+                logger.debug('Image flipped')
                 return self.img.transpose(Image.FLIP_LEFT_RIGHT).convert("RGBA")
         else:
-            logger.info('Image not flipped')
+            logger.debug('Image not flipped')
 
         return self.img.convert("RGBA")
 
     def draw_detection_bboxes(self, thresh: float = 0.65) -> np.array:
+        logger.debug(f'Drawing Bounding Boxes of detected objects...')
 
         self.detect_objects(thresh=thresh)
 
         if len(self.bboxes) == 0:
-            logger.info(
+            logger.debug(
                 "No objects detected... Aborting drawing of bounding boxes.")
             return
 
@@ -96,6 +97,9 @@ class ComputerVision(ImageWrapper):
         return self.img_np_boxed
 
     def smart_crop(self, output_size: tuple = (1080, 1080)):
+        logger.debug(
+            f'Cropping image smartly... Output size is: `{output_size}`')
+
         ratio = output_size[0]/output_size[1]
         cropper = SmartCrop()
         result = cropper.crop(self.img, 100*ratio, 100)
@@ -112,6 +116,7 @@ class ComputerVision(ImageWrapper):
         return self.img
 
     def _setup_model(self) -> None:
+        logger.debug(f'Setting up Compute Vision Model...')
 
         classFile = LOCAL_MODELS_PATH / 'coco.names'
         configPath = str(LOCAL_MODELS_PATH /
@@ -129,7 +134,7 @@ class ComputerVision(ImageWrapper):
 
         self.net = net
 
-        logger.info(f'Computer Vision setup with model: `{self.model}`')
+        logger.debug(f'Computer Vision setup with model: `{self.model}`')
 
     def _get_coverage_per_half(self) -> np.array:
         """
@@ -137,6 +142,9 @@ class ComputerVision(ImageWrapper):
         of image `img` is occupied by `bboxes`. Returns tuple of list
         of percentages for left and right, respectivelly.
         """
+        logger.debug(
+            f'Calculating how much percentage of each image size is covered by detected object...')
+
         W, H = self.img.size
         total_area = W * H
 
@@ -160,6 +168,9 @@ class ComputerVision(ImageWrapper):
         return self.area_coverages_per_half
 
     def _check_if_left_more_covered(self) -> bool:
+        logger.debug(
+            f'Check which half is more covered by detected objects...')
+
         if len(self.area_coverages_per_half) == 0:
             return False
         sums = self.area_coverages_per_half.sum(axis=0)
