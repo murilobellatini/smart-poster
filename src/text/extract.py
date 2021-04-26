@@ -1,8 +1,11 @@
 
 from quote import quote
 
+from src.custom_logging import getLogger
 from src.text import Quote
 from src import ConfigLoader
+
+logger = getLogger(__name__)
 
 
 class QuoteExtractor(ConfigLoader):

@@ -152,11 +152,14 @@ class ContentProducer(ConfigLoader):
                         tokens = [t]
 
                     ie = ApiImgExtractor(self.img_api)
-                    ie.query(_search_params={
-                        'q': random.choice(tokens),
-                        'imgType': 'photos',
-                        'return_count': self.posts_per_theme,
-                    })
+                    while not ie.img_urls:
+                        chosen_t = random.choice(tokens)
+                        ie.query(_search_params={
+                            'q': chosen_t,
+                            'imgType': 'photos',
+                            'return_count': self.posts_per_theme,
+                        })
+                        tokens.remove(chosen_t)
                     img_url = list(ie.img_urls)[0]
                 else:
                     raise NotImplementedError

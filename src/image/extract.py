@@ -2,8 +2,13 @@ import os
 from pyunsplash import PyUnsplash
 from google_images_search import GoogleImagesSearch
 
+from time import sleep
+from src.custom_logging import getLogger
 from src.paths import LOCAL_PROCESSED_DATA_PATH
 from src.credentials import unsplash_credentials
+
+
+logger = getLogger(__name__)
 
 # get keys for apis
 unsplash_key = os.environ.get('UNSPLASH_ACCESS_KEY')
@@ -54,8 +59,15 @@ class ApiImgExtractor():
                     img_urls_to_ignore = fp.read().splitlines()
 
         if self.api == 'unsplash':
-            self.cursor = self.api_instance.search(
-                type_=_search_params['imgType'], query=_search_params['q'])  # @todo: generalize for `collections` and `users`
+            while not self.img_urls:
+                try:
+                    self.cursor = self.api_instance.search(
+                        type_=_search_params['imgType'], query=_search_params['q'])  # @todo: generalize for `collections` and `users`
+                except Exception as e:
+                    logger.error(
+                        f'Image API `{self.api}` returned error. Probably quota has been exceeded... Waiting 10 min to retry request.')
+                    sleep(60*10)
+
             self._update_img_urls(
                 img_urls_to_ignore=img_urls_to_ignore,
                 min_return_count=_search_params.get('return_count')
@@ -90,7 +102,9 @@ class ApiImgExtractor():
 
             try:
                 self.paginate_results(ignore_img_update=True)
-            except:
+            except Exception as e:
+                logger.error(
+                    'Pagination failed. Skipping process. `self.img_urls` might be unstable;')
                 break
 
     def paginate_results(self, ignore_img_update: bool = False) -> None:
