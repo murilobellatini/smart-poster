@@ -238,4 +238,6 @@ class ContentProducer(ConfigLoader):
                     'filepath_txt': filepath_txt
                 })
 
+        logger.info(f'Content successfully produced...')
+
         return content

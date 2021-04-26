@@ -81,6 +81,8 @@ class Creative(ImageWrapper):
 
         self.creative = canvas.convert('RGB')
 
+        logger.debug('Creative successfully built...')
+
         return self.creative
 
     def load_layers(self, overlay: str = 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT') -> tuple:
