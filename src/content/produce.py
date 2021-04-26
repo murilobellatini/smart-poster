@@ -11,9 +11,6 @@ from src.image.extract import ApiImgExtractor
 from src.paths import LOCAL_PROCESSED_DATA_PATH
 
 
-logger = getLogger(__name__)
-
-
 class Post(ConfigLoader):
 
     def __init__(self, quote: Quote, img_url: str, profile_name: str = ' ',
@@ -23,13 +20,15 @@ class Post(ConfigLoader):
 
         super().__init__()
 
-        logger.debug('Constructing Post...')
+        self.logger = getLogger(self.__class__.__name__)
+
+        self.logger.debug('Constructing Post...')
 
         self.quote = quote
         self.img_url = img_url
 
         if self.ignore_config:
-            logger.debug('Loading data from `config.json` file')
+            self.logger.debug('Loading data from `config.json` file')
             self.profile_name = profile_name
             self.output_size = output_size
             self.txt_aspect_ratio = txt_aspect_ratio
@@ -44,7 +43,7 @@ class Post(ConfigLoader):
 
     def build_post(self) -> tuple:
 
-        logger.debug('Building Post...')
+        self.logger.debug('Building Post...')
 
         c = Creative(
             txt=self.quote.main_txt,
@@ -107,13 +106,13 @@ class Post(ConfigLoader):
         with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_img_urls.txt", "a") as fp:
             fp.write(self.img_url + '\n')
 
-        logger.debug('Post built successfully...')
+        self.logger.debug('Post built successfully...')
 
         return self.creative, self.caption
 
     def get_wiki_url(self, query: str) -> str:
 
-        logger.debug(f'Getting Wiki URL for query `{query}`...')
+        self.logger.debug(f'Getting Wiki URL for query `{query}`...')
 
         if not "Unknown" in query:
             results = wikipedia.search(query)
@@ -122,16 +121,16 @@ class Post(ConfigLoader):
                     p = wikipedia.page(r)
                     break
                 except Exception as e:
-                    logger.error(
+                    self.logger.error(
                         f'Exception thrown for `{r}`. Skipping result...\n`{e}`')
             return p.url
 
     def export_post(self, filepath: Path, img_format: str = 'PNG') -> None:
-        logger.debug(f'Exporting post to {filepath}...')
+        self.logger.debug(f'Exporting post to {filepath}...')
         self.creative.save(filepath, img_format, quality=90)
 
     def export_caption(self, filepath: Path) -> None:
-        logger.debug(f'Exporting caption to {filepath}...')
+        self.logger.debug(f'Exporting caption to {filepath}...')
         with open(filepath, mode='w', encoding='utf8') as fp:
             fp.write(self.caption)
 
@@ -145,6 +144,8 @@ class ContentProducer(ConfigLoader):
                  output_size: tuple = (1080, 1080), img_api: str = 'unsplash') -> None:
 
         super().__init__()
+
+        self.logger = getLogger(self.__class__.__name__)
 
         self.themes = themes
         self.posts_per_theme = posts_per_theme
@@ -205,7 +206,7 @@ class ContentProducer(ConfigLoader):
                         })
                         tokens.remove(chosen_t)
                         if not tokens:
-                            logger.error(
+                            self.logger.error(
                                 "No image available for any the text options... Skipping creative.")
                             continue
                     img_url = list(ie.img_urls)[0]
@@ -238,6 +239,6 @@ class ContentProducer(ConfigLoader):
                     'filepath_txt': filepath_txt
                 })
 
-        logger.info(f'Content successfully produced...')
+        self.logger.info(f'Content successfully produced...')
 
         return content

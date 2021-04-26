@@ -9,8 +9,6 @@ from src.paths import LOCAL_PROCESSED_DATA_PATH
 from src.credentials import unsplash_credentials
 
 
-logger = getLogger(__name__)
-
 # get keys for apis
 unsplash_key = os.environ.get('UNSPLASH_ACCESS_KEY')
 google_key = os.environ.get('GCP_KEY')
@@ -28,6 +26,8 @@ class ApiImgExtractor(ConfigLoader):
     def __init__(self, api: str, ignore_used_imgs: bool = True) -> None:
 
         super().__init__()
+
+        self.logger = getLogger(self.__class__.__name__)
 
         if api not in api_instances.keys():
             raise NotImplementedError
@@ -55,7 +55,7 @@ class ApiImgExtractor(ConfigLoader):
             'return_count': 10
         }
         """
-        logger.debug(
+        self.logger.debug(
             f'Requesting API {self.api} for images... Query: {_search_params["q"]}')
 
         img_urls_to_ignore = []
@@ -78,11 +78,11 @@ class ApiImgExtractor(ConfigLoader):
                     )
                     i += 1
                     if i == 7:
-                        logger.error(
+                        self.logger.error(
                             f"7  Attempts made to retrieve Images  for query `{_search_params['q']}` with no results. Aborting process.")
                         break
                 except Exception as e:
-                    logger.error(
+                    self.logger.error(
                         f'Image API `{self.api}` returned error. Probably quota has been exceeded... Waiting 10 min to retry request.')
                     sleep(60*10)
 
@@ -96,7 +96,7 @@ class ApiImgExtractor(ConfigLoader):
             )
 
     def _update_img_urls(self, img_urls_to_ignore: list = None, min_return_count: int = 1) -> None:
-        logger.debug(f'Gathering image urls into single list...')
+        self.logger.debug(f'Gathering image urls into single list...')
 
         while len(self.img_urls) < min_return_count:
             if self.api == 'unsplash':
@@ -117,12 +117,12 @@ class ApiImgExtractor(ConfigLoader):
             try:
                 self.paginate_results(ignore_img_update=True)
             except Exception as e:
-                logger.error(
+                self.logger.error(
                     f'Pagination failed. Skipping process. `{self.img_urls}` might be unstable.\nError {e} ')
                 break
 
     def paginate_results(self, ignore_img_update: bool = False) -> None:
-        logger.debug(f'Paginating image API results...')
+        self.logger.debug(f'Paginating image API results...')
 
         if self.api == 'unsplash':
             self.cursor = self.cursor.get_next_page()

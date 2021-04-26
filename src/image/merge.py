@@ -9,8 +9,6 @@ from src.image.text import TextDrawer
 from src.image import ImageWrapper
 from src.paths import LOCAL_GLOBAL_DATA
 
-logger = getLogger(__name__)
-
 
 class Creative(ImageWrapper):
 
@@ -22,6 +20,8 @@ class Creative(ImageWrapper):
                  output_size: tuple = (1080, 1080)):
 
         super().__init__()
+
+        self.logger = getLogger(self.__class__.__name__)
 
         self.txt = txt
         self.bottom_right_txt = bottom_right_txt
@@ -56,7 +56,7 @@ class Creative(ImageWrapper):
         Merges text `txt` to image `img` with possible overlays below:
         Output with squared aspect ratio.
         """
-        logger.debug(f'Composing creative...')
+        self.logger.debug(f'Composing creative...')
 
         cp = ComputerVision()
         self.img = cp.load_img(self.img)
@@ -81,12 +81,12 @@ class Creative(ImageWrapper):
 
         self.creative = canvas.convert('RGB')
 
-        logger.debug('Creative successfully built...')
+        self.logger.debug('Creative successfully built...')
 
         return self.creative
 
     def load_layers(self, overlay: str = 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT') -> tuple:
-        logger.debug(f'Loading layers...')
+        self.logger.debug(f'Loading layers...')
 
         canvas_black = Image.open(
             str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVAS_BLACK.png')).convert("RGBA")
@@ -107,7 +107,7 @@ class Creative(ImageWrapper):
         return canvas_black, canvas, overlay_
 
     def get_txt_layers(self) -> tuple:
-        logger.debug(f'Creating text layers...')
+        self.logger.debug(f'Creating text layers...')
 
         ar, txt_w, txt_h = self.get_txt_stats()
 
@@ -136,7 +136,7 @@ class Creative(ImageWrapper):
         return self.img_txt, self.img_txt_tr, self.img_txt_br
 
     def get_txt_stats(self) -> tuple:
-        logger.debug(f'Getting text status...')
+        self.logger.debug(f'Getting text status...')
 
         if self.txt_aspect_ratio == 'NARROW':
             txt_w, txt_h = (0, self.img.size[1]*.92)
@@ -152,7 +152,7 @@ class Creative(ImageWrapper):
         return ar, txt_w, txt_h
 
     def merge_layers(self, bg: Image, fg: Image, align: str, pos_: tuple = None):
-        logger.debug(f'Merging layers...')
+        self.logger.debug(f'Merging layers...')
 
         if align == 'TOP_LEFT':
             pos = (0, 0)

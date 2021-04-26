@@ -7,8 +7,6 @@ from functools import wraps
 from src.custom_logging import getLogger
 from src.credentials import AD_ACCOUNT_ID, API_VERSION, FB_ACCESS_TOKEN_SANDBOX
 
-logger = getLogger(__name__)
-
 
 class SocialMediaInteractor():
     def __init__(self, endpoint: str,
@@ -17,6 +15,8 @@ class SocialMediaInteractor():
                  access_token: str = FB_ACCESS_TOKEN_SANDBOX,
                  limit: int = 45,
                  locale: str = 'en_US'):
+
+        self.logger = getLogger(self.__class__.__name__)
 
         self.endpoint = endpoint
         self.api_version = api_version

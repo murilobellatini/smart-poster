@@ -2,9 +2,11 @@ from src.content.produce import ContentProducer
 
 if __name__ == "__main__":
     cp = ContentProducer(
-        themes=['wrong',
-                # 'green', 'purple'
+        themes=['right',
+                'green',
+                'purple',
+                'wrong',
                 ],
-        posts_per_theme=1,
+        posts_per_theme=5,
     )
     cp.produce_content()

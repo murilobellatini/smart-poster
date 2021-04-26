@@ -6,14 +6,14 @@ from src.custom_logging import getLogger
 from src.text import Quote
 from src import ConfigLoader
 
-logger = getLogger(__name__)
-
 
 class QuoteExtractor(ConfigLoader):
 
     def __init__(self, query: str, quote_source: str = 'QUOTE_API', limit: int = None, ignore_used_quotes: bool = True):
 
         super().__init__()
+
+        self.logger = getLogger(self.__class__.__name__)
 
         if self.ignore_config:
             self.quote_source = quote_source
@@ -25,7 +25,7 @@ class QuoteExtractor(ConfigLoader):
         self._extract_quotes()
 
     def _extract_quotes(self) -> None:
-        logger.debug(f'Extracting quotes from `{self.quote_source}`...')
+        self.logger.debug(f'Extracting quotes from `{self.quote_source}`...')
 
         quotes_to_ignore = []
 

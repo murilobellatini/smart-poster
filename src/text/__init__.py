@@ -16,7 +16,6 @@ download('stopwords')
 download('wordnet')
 nlp = spacy.load('en_core_web_sm')
 
-logger = getLogger(__name__)
 
 regex = re.compile(
     r'^(?:http|ftp)s?://'  # http:// or https://
@@ -34,6 +33,8 @@ class Quote(ConfigLoader):
                  source_type: str, lang: str = 'english'):
 
         super().__init__()
+
+        self.logger = getLogger(self.__class__.__name__)
 
         if self.ignore_config:
             self.lang = lang
@@ -54,7 +55,7 @@ class Quote(ConfigLoader):
         return f"<Quote author:`{self.author}` source:`{self.source}` quote_prev:`{self.quote[:15]}...`>"
 
     def to_dict(self):
-        logger.debug(f'Converting Quote to Text...')
+        self.logger.debug(f'Converting Quote to Text...')
 
         return {
             'quote': self.quote,
@@ -65,7 +66,7 @@ class Quote(ConfigLoader):
         }
 
     def filter_tags(self, from_: str = "main_txt", title: bool = False, tags: list = ['NOUN']):
-        logger.debug(f'Filtering Quote\'s tags...')
+        self.logger.debug(f'Filtering Quote\'s tags...')
 
         if from_ == "main_txt":
             txt = self.main_txt
@@ -85,7 +86,7 @@ class Quote(ConfigLoader):
         return output
 
     def generate_hashtags(self, num_topics: int = 10, passes: int = 3) -> list:
-        logger.debug(f'Generating Quote\'s hashtags...')
+        self.logger.debug(f'Generating Quote\'s hashtags...')
 
         text = ' '.join(self.to_dict().values())
 
@@ -121,7 +122,7 @@ class Quote(ConfigLoader):
         return self.hashtags
 
     def break_text(self, word_count: int = 16):
-        logger.debug(f'Breaking Quote\'s text into main the rest...')
+        self.logger.debug(f'Breaking Quote\'s text into main the rest...')
 
         quote_words = self.quote.strip().split(' ')
         main_txt = ' '.join(quote_words[:word_count])
