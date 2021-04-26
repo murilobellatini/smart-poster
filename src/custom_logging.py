@@ -7,7 +7,7 @@ from src.paths import LOCAL_GLOBAL_DATA
 from logging import (NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
 
-def getLogger(name: str, logging_level: int = INFO):
+def getLogger(name: str, logging_level: int = DEBUG):
     """
     Returns a logger object with timestamp
     information and terminal output
@@ -24,6 +24,7 @@ def getLogger(name: str, logging_level: int = INFO):
     file_handler = logging.FileHandler(
         LOCAL_GLOBAL_DATA / 'application.log')
     file_handler.setLevel(logging_level)
+    file_handler.setFormatter(logFormatter)
 
     # sets logger object
     logger = logging.getLogger(name)
