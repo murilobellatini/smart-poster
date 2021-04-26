@@ -1,4 +1,6 @@
 import random
+import wikipedia
+from pathlib import Path
 
 from src.text import Quote
 from src import ConfigLoader
@@ -6,10 +8,8 @@ from src.image.merge import Creative
 from src.custom_logging import getLogger
 from src.text.extract import QuoteExtractor
 from src.image.extract import ApiImgExtractor
-
 from src.paths import LOCAL_PROCESSED_DATA_PATH
 
-from pathlib import Path
 
 logger = getLogger(__name__)
 
@@ -75,6 +75,18 @@ class Post(ConfigLoader):
 
         cta.append(' '.join(self.hashtags))
 
+        w_urls = []
+        for query in (self.quote.author, self.quote.source):
+            w_url = self.get_wiki_url(query)
+            if w_url:
+                w_urls.append(w_url)
+
+        if w_urls:
+            cta.extend([
+                10*'➖',
+                '📙 Learn more on Wikipedia'
+            ] + w_urls)
+
         cta.extend([
             10*'➖',
             '⭐ We wish you a lot of wisdom!'
@@ -91,6 +103,19 @@ class Post(ConfigLoader):
             fp.write(self.img_url + '\n')
 
         return self.creative, self.caption
+
+    def get_wiki_url(self, query: str) -> str:
+
+        if not "Unknown" in query:
+            results = wikipedia.search(query)
+            for r in results:
+                try:
+                    p = wikipedia.page(r)
+                    break
+                except Exception as e:
+                    logger.error(
+                        f'Exception thrown. Skipping result...\n`{e}`')
+            return p.url
 
     def export_post(self, filepath: Path, img_format: str = 'PNG') -> None:
         self.creative.save(filepath, img_format, quality=90)
