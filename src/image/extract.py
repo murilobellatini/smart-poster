@@ -55,6 +55,9 @@ class ApiImgExtractor(ConfigLoader):
             'return_count': 10
         }
         """
+        logger.debug(
+            f'Requesting API {self.api} for images... Query: {_search_params["q"]}')
+
         img_urls_to_ignore = []
 
         if self.ignore_used_imgs:
@@ -76,7 +79,7 @@ class ApiImgExtractor(ConfigLoader):
                     i += 1
                     if i == 7:
                         logger.error(
-                            f"7  Attempts made to retrieve Images  for query `_search_params['q']` with no results. Aborting process.")
+                            f"7  Attempts made to retrieve Images  for query `{_search_params['q']}` with no results. Aborting process.")
                         break
                 except Exception as e:
                     logger.error(
@@ -93,6 +96,7 @@ class ApiImgExtractor(ConfigLoader):
             )
 
     def _update_img_urls(self, img_urls_to_ignore: list = None, min_return_count: int = 1) -> None:
+        logger.debug(f'Gathering image urls into single list...')
 
         while len(self.img_urls) < min_return_count:
             if self.api == 'unsplash':
@@ -114,10 +118,12 @@ class ApiImgExtractor(ConfigLoader):
                 self.paginate_results(ignore_img_update=True)
             except Exception as e:
                 logger.error(
-                    f'Pagination failed. Skipping process. `self.img_urls` might be unstable.\nError {e} ')
+                    f'Pagination failed. Skipping process. `{self.img_urls}` might be unstable.\nError {e} ')
                 break
 
     def paginate_results(self, ignore_img_update: bool = False) -> None:
+        logger.debug(f'Paginating image API results...')
+
         if self.api == 'unsplash':
             self.cursor = self.cursor.get_next_page()
         if self.api == 'google':
