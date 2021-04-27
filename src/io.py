@@ -60,7 +60,7 @@ class FileTransfer():
         self.bucket = gcs_bucket
 
         if local_dir_path is None and remote_dir_path is None:
-            logger.error(
+            logger.warning(
                 f'No dir path arguments given for `{filename}`, file transfering will not work...')
         elif local_dir_path is None and remote_dir_path is not None:
             self.remote_dir_path = remote_dir_path
@@ -167,7 +167,7 @@ class FileTransfer():
         Returns a boolean if IO arguments are present, such as `self.local_dir_path` and `self.remote_dir_path`.
         """
         if self.local_dir_path is None or self.remote_dir_path is None:
-            logger.error(
+            logger.warning(
                 f'No dir path arguments given for `{self.filename}`, aborting process... Set both of these args to continue.')
             return False
 

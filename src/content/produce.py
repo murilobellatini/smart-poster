@@ -206,7 +206,7 @@ class ContentProducer(ConfigLoader):
                         })
                         tokens.remove(chosen_t)
                         if not tokens:
-                            self.logger.error(
+                            self.logger.warning(
                                 "No image available for any the text options... Skipping creative.")
                             continue
                     img_url = list(ie.img_urls)[0]

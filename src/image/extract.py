@@ -78,11 +78,11 @@ class ApiImgExtractor(ConfigLoader):
                     )
                     i += 1
                     if i == 7:
-                        self.logger.error(
+                        self.logger.warning(
                             f"7  Attempts made to retrieve Images  for query `{_search_params['q']}` with no results. Aborting process.")
                         break
                 except Exception as e:
-                    self.logger.error(
+                    self.logger.warning(
                         f'Image API `{self.api}` returned error. Probably quota has been exceeded... Waiting 10 min to retry request.\bError:')
                     sleep(60*10)
 
@@ -117,7 +117,7 @@ class ApiImgExtractor(ConfigLoader):
             try:
                 self.paginate_results(ignore_img_update=True)
             except Exception as e:
-                self.logger.error(
+                self.logger.warning(
                     f'Pagination failed. Skipping process. `{self.img_urls}` might be unstable.\nError {e} ')
                 break
 
