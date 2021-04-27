@@ -1,26 +1,26 @@
 ignore_config: false
 ignore_used_quotes: true
 ignore_used_imgs: true
-lang: "english" # 'english'
-quote_source: "QUOTE_API" # QUOTE_API
-img_search: "QUOTE_BASED" # THEME_BASED|QUOTE_BASED
+lang: english # 'english'
+quote_source: QUOTE_API # QUOTE_API
+img_search: QUOTE_BASED # THEME_BASED|QUOTE_BASED
 profile_name: "@the.wisdom.drops"
 output_size: [1080, 1080]
-txt_aspect_ratio: "NARROW" # NARROW|WIDE
-font_family: "Poppins" # Arial|DancingScript|Georgia|Montserrat|Poppins
-font_style: "Bold" #Bold|Italic|Light
-font_color: "AUTO" # auto (or hex values)
-img_format: "PNG"
+txt_aspect_ratio: NARROW # NARROW|WIDE
+font_family: Poppins # Arial|DancingScript|Georgia|Montserrat|Poppins
+font_style: Bold # Bold|Italic|Light
+font_color: AUTO # auto (or hex values)
+img_format: PNG
 posts_per_theme: "[IGNORE]"
 txt_word_count: 16
-img_api: "unsplash" # unsplash|google
+img_api: unsplash # unsplash|google
 sat: "[IGNORE]"
 pct: "[IGNORE]"
 quality: "[IGNORE]"
 color_count: "[IGNORE]"
 brightness: "[IGNORE]"
 thresh: "[IGNORE]"
-area_to_keep_free: "LEFT" # LEFT|RIGHT
+area_to_keep_free: LEFT # LEFT|RIGHT
 bottom_right_txt: " "
 top_right_txt: " "
 padding: 40
