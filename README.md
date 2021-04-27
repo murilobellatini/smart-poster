@@ -2,6 +2,19 @@
 
 Application for generating social media posts automatically. In a smart way 🤓.
 
+## Usage
+
+```bash
+usage: main.py [-h] -t THEMES -c POST_COUNT_PER_THEME
+
+optional arguments:
+    -h, --help      show this help message and exit
+    -t THEMES, --themes THEMES
+                    string of themes to generate the posts about; Enter multiple ones separated by comma `,`
+    -c POST_COUNT_PER_THEME, --post_count_per_theme POST_COUNT_PER_THEME
+                    amount of posts per theme
+```
+
 ## How to setup
 
 ### Requirements
