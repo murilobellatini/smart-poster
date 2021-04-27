@@ -54,4 +54,4 @@ pipenv shell
 pip install -r requirements.txt
 ```
 
-3. Run Jupyter Notebooks at will
+3. Run script from cli (check `Usage` above)
