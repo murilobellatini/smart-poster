@@ -83,7 +83,7 @@ class ApiImgExtractor(ConfigLoader):
                         break
                 except Exception as e:
                     self.logger.error(
-                        f'Image API `{self.api}` returned error. Probably quota has been exceeded... Waiting 10 min to retry request.')
+                        f'Image API `{self.api}` returned error. Probably quota has been exceeded... Waiting 10 min to retry request.\bError:')
                     sleep(60*10)
 
         elif self.api == 'google':
