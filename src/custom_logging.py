@@ -7,7 +7,7 @@ from src.paths import LOCAL_GLOBAL_DATA
 from logging import (NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
 
-def getLogger(name: str, logging_level: int = INFO):
+def getLogger(name: str, logging_level: int = DEBUG):
     """
     Returns a logger object with timestamp
     information and terminal output
@@ -15,7 +15,7 @@ def getLogger(name: str, logging_level: int = INFO):
 
     # sets logging output format
     logFormatter = logging.Formatter(
-        "\n%(asctime)s [%(module)s] [%(name)s] [%(funcName)s] [%(levelname)s] %(message)s")
+        "%(asctime)s [%(module)s] [%(name)s] [%(funcName)s] [%(levelname)s] %(message)s")
 
     # sets StreamHandler object to output to terminal in formatted style
     screen_handler = logging.StreamHandler()
