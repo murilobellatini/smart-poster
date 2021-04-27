@@ -1,111 +1,244 @@
-from PIL import Image
-from quote import quote
-from src.image.crop import crop
-from src.image.merge import compose_creative
-from src.text.manipulate import break_text
-from src.image.extract import ApiImgExtractor
-from src.image.merge import compose_creative
-
-from src.paths import LOCAL_PROCESSED_DATA_PATH
-
-from src.text.extract import generate_hashtags
+import random
+import wikipedia
 from pathlib import Path
 
-
-def produce_content(themes: list, posts_per_theme: int, profile_name: str, txt_aspect_ratio: str = "NARROW", format_: str = "PNG", max_words: int = 16, output_size: tuple = (1080, 1080), api_: str = 'unsplash'):
-    content = []
-
-    for t in themes:
-        api = ApiImgExtractor(api_)
-        quotes = quote(t, limit=posts_per_theme)
-        api.query(_search_params={
-            'q': t,
-            'imgType': 'photos'
-        })
-
-        if not quotes:
-            continue
-
-        for i, (q, img_url) in enumerate(zip(quotes, api.img_urls)):
-
-            filepath = LOCAL_PROCESSED_DATA_PATH / f"{t}_{i}.{format_}"
-            filepath_txt = LOCAL_PROCESSED_DATA_PATH / f"{t}_{i}.txt"
-
-            if not q or not img_url:
-                break
-
-            post, caption = build_post(q=q, img_url=img_url, profile_name=profile_name,
-                                       txt_aspect_ratio=txt_aspect_ratio, output_size=output_size, max_words=max_words)
-            export_post(post, filepath)
-            export_caption(caption, filepath_txt)
-
-            content.append({
-                'id': filepath.stem,
-                'theme': t,
-                'filepath': filepath,
-                'filepath_txt': filepath_txt
-            })
-
-    return content
+from src.text import Quote
+from src import ConfigLoader
+from src.image.merge import Creative
+from src.custom_logging import getLogger
+from src.text.extract import QuoteExtractor
+from src.image.extract import ApiImgExtractor
+from src.paths import LOCAL_PROCESSED_DATA_PATH
 
 
-def build_post(q: dict, img_url: str, profile_name: str, output_size=(1080, 1080), txt_aspect_ratio: str = 'NARROW', max_words: int = 16):
+class Post(ConfigLoader):
 
-    img = crop(img_url, export=False, output_size=output_size)
+    def __init__(self, quote: Quote, img_url: str, profile_name: str = ' ',
+                 output_size: tuple = (1080, 1080), txt_aspect_ratio: str = 'NARROW',
+                 font_family: str = 'Poppins', font_style: str = 'Bold',
+                 font_color: str = 'AUTO') -> None:
 
-    txt = q.get('quote').strip()
-    tb_txt = 'Unknown Author'
+        super().__init__()
 
-    if (q.get('author') != '') and (len(q.get('author').split(' ')) > 1):
-        tb_txt = q['author']
-    elif q.get('book') != '':
-        tb_txt = "Book: " + q['book']
+        self.logger = getLogger(self.__class__.__name__)
 
-    txt = txt.replace('.', '. ').replace('  ', ' ')
+        self.logger.debug('Constructing Post...')
 
-    txt2draw, caption = break_text(txt=txt, word_count=max_words)
+        self.quote = quote
+        self.img_url = img_url
 
-    hashtags = generate_hashtags(' '.join(q.values()))
+        if self.ignore_config:
+            self.logger.debug('Loading data from `config.yaml` file')
+            self.profile_name = profile_name
+            self.output_size = output_size
+            self.txt_aspect_ratio = txt_aspect_ratio
+            self.font_family = font_family
+            self.font_style = font_style
+            self.font_color = font_color
 
-    cta = ['\n']
+        self.caption = quote.caption
+        self.hashtags = quote.hashtags
+        self.txt2draw = quote.main_txt
+        self.creative, self.caption = self.build_post()
 
-    if q.get('book') and (q.get('book') != ''):
-        cta.append('Book: "' + q['book'] + '"')
-    if q.get('author') and (q.get('author') != ''):
-        cta.append('Author: ' + q['author'])
+    def build_post(self) -> tuple:
 
-    cta.extend([
-        '\n💥 Pages for you to like!',
-        f'👉 {profile_name}',
-        10*'➖',
-        '🤐 Comment 6x with 💪 and like our post! 🤫',
-        10*'➖',
-        '❤Like 💬Comment ✔Follow us',
-        10*'➖',
-        '#️⃣Hashtags:⠀',
-    ])
+        self.logger.debug('Building Post...')
 
-    cta.append(' '.join(hashtags))
+        c = Creative(
+            txt=self.quote.main_txt,
+            bottom_right_txt=self.quote.author,
+            top_right_txt=self.profile_name,
+            img_url=self.img_url,
+            txt_aspect_ratio=self.txt_aspect_ratio,
+            font_family=self.font_family,
+            font_style=self.font_style,
+            font_color=self.font_color,
+            output_size=self.output_size
+        )
 
-    cta.extend([
-        10*'➖',
-        '☆ We wish you a lot of wisdom!'
-    ])
+        self.creative = c.creative
 
-    caption += '\n'.join(cta)
+        cta = ['\n']
 
-    post = compose_creative(img, txt2draw, bottom_right_txt=tb_txt,
-                            top_right_txt=profile_name,
-                            txt_aspect_ratio=txt_aspect_ratio,
-                            txt_brightness=3)
+        cta.append(
+            f'📕 {self.quote.source_type.title()}: {self.quote.source.title()}')
+        cta.append(f'✍️ Author: {self.quote.author.title()}')
 
-    return post, caption.strip()
+        cta.extend([
+            10*'➖',
+            '💥 Pages for you to like!',
+            f'👉 {self.profile_name}',
+            10*'➖',
+            '🤐 Comment 6x with 💪 and like our post! 🤫',
+            10*'➖',
+            '❤️Like 💬Comment 👣Follow us',
+            10*'➖',
+            '#️⃣Hashtags⠀',
+        ])
+
+        cta.append(' '.join(self.hashtags))
+
+        w_urls = []
+        for query in (self.quote.author, self.quote.source):
+            w_url = self.get_wiki_url(query)
+            if w_url:
+                w_urls.append(w_url)
+
+        if w_urls:
+            cta.extend([
+                10*'➖',
+                '📙 Learn more on Wikipedia'
+            ] + w_urls)
+
+        cta.extend([
+            10*'➖',
+            '⭐ We wish you a lot of wisdom!'
+        ])
+
+        self.caption += '\n'.join(cta)
+
+        self.caption = self.caption.strip()
+
+        with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_quotes.txt", "a") as fp:
+            fp.write(f'{self.quote.id},"{self.quote.main_txt}"\n')
+
+        with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_img_urls.txt", "a") as fp:
+            fp.write(self.img_url + '\n')
+
+        self.logger.debug('Post built successfully...')
+
+        return self.creative, self.caption
+
+    def get_wiki_url(self, query: str) -> str:
+
+        self.logger.debug(f'Getting Wiki URL for query `{query}`...')
+
+        if not "Unknown" in query:
+            results = wikipedia.search(query)
+            for r in results:
+                try:
+                    p = wikipedia.page(r)
+                    break
+                except Exception as e:
+                    self.logger.warning(
+                        f'Exception thrown for `{r}`. Skipping result...\n`{e}`')
+            return p.url
+
+    def export_post(self, filepath: Path, img_format: str = 'PNG') -> None:
+        self.logger.debug(f'Exporting post to {filepath}...')
+        self.creative.save(filepath, img_format, quality=90)
+
+    def export_caption(self, filepath: Path) -> None:
+        self.logger.debug(f'Exporting caption to {filepath}...')
+        with open(filepath, mode='w', encoding='utf8') as fp:
+            fp.write(self.caption)
 
 
-def export_post(post: Image, filepath: Path, format_: str = 'PNG'):
-    post.save(filepath, format_, quality=90)
+class ContentProducer(ConfigLoader):
 
+    def __init__(self, themes: list, posts_per_theme: int, img_search: str = 'THEME_BASED',
+                 profile_name: str = ' ', txt_aspect_ratio: str = "NARROW",
+                 font_family: str = 'Poppins', font_style: str = 'Bold',
+                 font_color: str = 'AUTO', img_format: str = "PNG", txt_word_count: int = 16,
+                 output_size: tuple = (1080, 1080), img_api: str = 'unsplash') -> None:
 
-def export_caption(caption: str, filepath: Path):
-    with open(filepath, mode='w', encoding='utf8') as fp:
-        fp.write(caption)
+        super().__init__()
+
+        self.logger = getLogger(self.__class__.__name__)
+
+        self.themes = themes
+        self.posts_per_theme = posts_per_theme
+
+        if self.ignore_config:
+
+            self.profile_name = profile_name
+            self.txt_aspect_ratio = txt_aspect_ratio
+            self.img_format = img_format
+            self.txt_word_count = txt_word_count
+            self.output_size = output_size
+            self.img_api = img_api
+            self.font_family = font_family
+            self.font_style = font_style
+            self.font_color = font_color
+            self.img_search = img_search
+
+    def produce_content(self):
+        content = []
+        img_urls_to_ignore = []
+
+        for t in self.themes:
+
+            ie = ApiImgExtractor(self.img_api)
+            qe = QuoteExtractor(
+                query=t, quote_source='QUOTE_API', limit=self.posts_per_theme)
+
+            if self.img_search == "THEME_BASED":
+                ie.query(_search_params={
+                    'q': t,
+                    'imgType': 'photos',
+                    'return_count': self.posts_per_theme,
+                })
+
+            if not qe.results:
+                continue
+
+            for i, q in enumerate(qe.results):
+
+                if self.img_search == "THEME_BASED":
+                    img_url = list(ie.img_urls)[i]
+                elif self.img_search == "QUOTE_BASED":
+
+                    tokens = [str(t) for t in set(
+                              q.filter_tags(tags="NOUN") +
+                              q.filter_tags(tags="NOUN", title=True) +
+                              q.filter_tags(tags="PROPN") +
+                              q.filter_tags(tags="VERB") +
+                              [t])]
+
+                    ie = ApiImgExtractor(self.img_api)
+                    while not ie.img_urls:
+                        chosen_t = random.choice(tokens)
+                        ie.query(_search_params={
+                            'q': chosen_t,
+                            'imgType': 'photos',
+                            'return_count': self.posts_per_theme,
+                        })
+                        tokens.remove(chosen_t)
+                        if not tokens:
+                            self.logger.error(
+                                "No image available for any the text options... Skipping creative.")
+                            continue
+                    img_url = list(ie.img_urls)[0]
+                else:
+                    raise NotImplementedError
+
+                filepath_img = LOCAL_PROCESSED_DATA_PATH / \
+                    f"{t}_{i}.{self.img_format}"
+                filepath_txt = LOCAL_PROCESSED_DATA_PATH / f"{t}_{i}.txt"
+
+                if not q or not img_url:
+                    break
+
+                p = Post(quote=q, img_url=img_url,
+                         profile_name=self.profile_name,
+                         output_size=self.output_size,
+                         txt_aspect_ratio=self.txt_aspect_ratio,
+                         font_family=self.font_family,
+                         font_style=self.font_style,
+                         font_color=self.font_color,
+                         )
+
+                p.export_post(filepath_img)
+                p.export_caption(filepath_txt)
+
+                content.append({
+                    'id': filepath_img.stem,
+                    'theme': t,
+                    'filepath': filepath_img,
+                    'filepath_txt': filepath_txt
+                })
+
+        self.logger.info(f'Content successfully produced...')
+
+        return content

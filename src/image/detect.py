@@ -1,83 +1,178 @@
 import cv2
+import requests
 import numpy as np
 from PIL import Image
+from smartcrop import SmartCrop
+
+from src.custom_logging import getLogger
 from src.paths import LOCAL_MODELS_PATH
+from src.image import ImageWrapper
 
 
-def detect_objects(img: np.ndarray, thres: float = 0.45):
+class ComputerVision(ImageWrapper):
 
-    classFile = LOCAL_MODELS_PATH / 'coco.names'
-    configPath = str(LOCAL_MODELS_PATH /
-                     'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt')
-    weightsPath = str(LOCAL_MODELS_PATH / 'frozen_inference_graph.pb')
+    def __init__(self, model: str = "OpenCV_dnn_DetectionModel") -> None:
 
-    with open(classFile, 'rt') as f:
-        classNames = f.read().rstrip('\n').split('\n')
+        super().__init__()
 
-    net = cv2.dnn_DetectionModel(weightsPath, configPath)
-    net.setInputSize(320, 320)
-    net.setInputScale(1.0 / 127.5)
-    net.setInputMean((127.5, 127.5, 127.5))
-    net.setInputSwapRB(True)
+        self.logger = getLogger(self.__class__.__name__)
 
-    classIds, confs, bbox = net.detect(img, confThreshold=thres)
+        if self.ignore_config:
+            self.model = model
 
-    return classIds, classNames, confs, bbox
+        if model == "OpenCV_dnn_DetectionModel":
+            self.model = model
+        else:
+            raise NotImplementedError
 
+        self._setup_model()
 
-def get_obj_bboxes(img: Image, thresh: float = 0.55):
-    img_ = np.array(img)
+    def detect_objects(self, thresh: float = 0.65) -> None:
 
-    bboxes = detect_objects(img_)[-1]
-    conf_lvls = detect_objects(img_)[-2]
+        detection_available = hasattr(self, 'thresh')
 
-    filtered_bboxes = []
+        if not detection_available:
+            self.thresh = thresh
 
-    for c, b in zip(conf_lvls, bboxes):
-        if c >= thresh:
-            filtered_bboxes.append(b)
+        if (self.thresh != thresh) or not detection_available:
+            self.thresh = thresh
+            self.classIds, self.confs, self.bboxes = self.net.detect(
+                self.img_np, confThreshold=thresh)
+            self.logger.debug(
+                f'{len(self.bboxes)} object(s) detected. Minimum confidence level: {thresh}')
+        else:
+            self.logger.debug(
+                f'Using available detected objects (count: {len(self.bboxes)}). Minimum confidence level: {self.thresh}')
 
-    return np.array(filtered_bboxes)
+    def flip_if_necessary(self, area_to_keep_free: str = 'LEFT', thresh: float = 0.65) -> Image:
+        self.logger.debug(f'Checking if image must be flipped...')
+        if area_to_keep_free in ('LEFT', 'RIGHT'):
+            keep_left_free = area_to_keep_free == 'LEFT'
+        else:
+            raise NotImplementedError
 
+        self.detect_objects(thresh=thresh)
 
-def object_area_coverage(img, bboxes):
-    """
-    Checks the percentage of each half (left and right)
-    of image `img` is occupied by `bboxes`. Returns tuple of list
-    of percentages for left and right, respectivelly.
-    """
-    W, H = img.size
-    total_area = W * H
+        if not len(self.bboxes) == 0:
+            self._get_coverage_per_half()
+            self._check_if_left_more_covered()
+            if self.is_left_more_covered == keep_left_free:
+                self.logger.debug('Image flipped')
+                return self.img.transpose(Image.FLIP_LEFT_RIGHT).convert("RGBA")
+        else:
+            self.logger.debug('Image not flipped')
 
-    l_percs = []
-    r_percs = []
-    try:
-        for b in bboxes:
-            x, y, w, h = b
-            b_area_tot = w*h
-            b_area_right = max(0, ((x+w)-W/2)*h)
-            b_area_left = b_area_tot - b_area_right
-            l_percs.append(b_area_left/total_area)
-            r_percs.append(b_area_right/total_area)
-    except Exception as e:
-        print('b      :', b)
-        print('bboxes :', bboxes)
-        raise e
+        return self.img.convert("RGBA")
 
-    return np.array(list(zip(l_percs, r_percs)))
+    def draw_detection_bboxes(self, thresh: float = 0.65) -> np.array:
+        self.logger.debug(f'Drawing Bounding Boxes of detected objects...')
 
+        self.detect_objects(thresh=thresh)
 
-def is_left_more_covered(area_distributions: np.array):
-    if len(area_distributions) == 0:
-        return False
-    sums = area_distributions.sum(axis=0)
-    return sums[0] > sums[1]
+        if len(self.bboxes) == 0:
+            self.logger.debug(
+                "No objects detected... Aborting drawing of bounding boxes.")
+            return
 
+        img_boxed = self.img_np.copy()
+        gray = cv2.cvtColor(self.img_np, cv2.COLOR_BGR2GRAY)
 
-def flip_if_necessary(img: Image, min_conf: float = 0.65):
-    bboxes = get_obj_bboxes(img)
-    if not len(bboxes) == 0:
-        area_dist = object_area_coverage(img, bboxes)
-        if is_left_more_covered(area_dist):
-            img = img.transpose(Image.FLIP_LEFT_RIGHT)
-    return img.convert("RGBA")
+        output_rectangles = np.zeros(img_boxed.shape, dtype="uint8")
+
+        for classId, confidence, box in zip(self.classIds.flatten(), self.confs.flatten(), self.bboxes):
+            cv2.rectangle(img_boxed, box, color=(0, 255, 0), thickness=2)
+            cv2.rectangle(gray, box, color=(0, 0, 0), thickness=cv2.FILLED)
+            rectangle = cv2.rectangle(output_rectangles, box, color=(
+                255, 255, 255), thickness=cv2.FILLED)
+            output_rectangles = cv2.bitwise_or(output_rectangles, rectangle)
+            cv2.putText(img_boxed, self.classNames[classId-1].upper(), (box[0]+10,
+                        box[1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(img_boxed, str(round(confidence*100, 2)),
+                        (box[0]+200, box[1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
+
+        self.img_np_boxed = img_boxed
+        self.img_np_boxed_gray = gray
+        self.img_np_boxed_bw = output_rectangles
+
+        return self.img_np_boxed
+
+    def smart_crop(self, output_size: tuple = (1080, 1080)):
+        self.logger.debug(
+            f'Cropping image smartly... Output size is: `{output_size}`')
+
+        ratio = output_size[0]/output_size[1]
+        cropper = SmartCrop()
+        result = cropper.crop(self.img, 100*ratio, 100)
+        box = (
+            result['top_crop']['x'],
+            result['top_crop']['y'],
+            result['top_crop']['width'] + result['top_crop']['x'],
+            result['top_crop']['height'] + result['top_crop']['y']
+        )
+        cropped_image = self.img.crop(box)
+
+        self.img = cropped_image.resize(output_size)
+
+        return self.img
+
+    def _setup_model(self) -> None:
+        self.logger.debug(f'Setting up Compute Vision Model...')
+
+        classFile = LOCAL_MODELS_PATH / 'coco.names'
+        configPath = str(LOCAL_MODELS_PATH /
+                         'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt')
+        weightsPath = str(LOCAL_MODELS_PATH / 'frozen_inference_graph.pb')
+
+        with open(classFile, 'rt') as f:
+            self.classNames = f.read().rstrip('\n').split('\n')
+
+        net = cv2.dnn_DetectionModel(weightsPath, configPath)
+        net.setInputSize(320, 320)
+        net.setInputScale(1.0 / 127.5)
+        net.setInputMean((127.5, 127.5, 127.5))
+        net.setInputSwapRB(True)
+
+        self.net = net
+
+        self.logger.debug(f'Computer Vision setup with model: `{self.model}`')
+
+    def _get_coverage_per_half(self) -> np.array:
+        """
+        Checks the percentage of each half (left and right)
+        of image `img` is occupied by `bboxes`. Returns tuple of list
+        of percentages for left and right, respectivelly.
+        """
+        self.logger.debug(
+            f'Calculating how much percentage of each image size is covered by detected object...')
+
+        W, H = self.img.size
+        total_area = W * H
+
+        l_percs = []
+        r_percs = []
+        try:
+            for b in self.bboxes:
+                x, y, w, h = b
+                b_area_tot = w*h
+                b_area_right = max(0, ((x+w)-W/2)*h)
+                b_area_left = b_area_tot - b_area_right
+                l_percs.append(b_area_left/total_area)
+                r_percs.append(b_area_right/total_area)
+        except Exception as e:
+            print('b      :', b)
+            print('bboxes :', self.bboxes)
+            raise e
+
+        self.area_coverages_per_half = np.array(list(zip(l_percs, r_percs)))
+
+        return self.area_coverages_per_half
+
+    def _check_if_left_more_covered(self) -> bool:
+        self.logger.debug(
+            f'Check which half is more covered by detected objects...')
+
+        if len(self.area_coverages_per_half) == 0:
+            return False
+        sums = self.area_coverages_per_half.sum(axis=0)
+        self.is_left_more_covered = sums[0] > sums[1]
+        return self.is_left_more_covered

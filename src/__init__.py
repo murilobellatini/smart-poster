@@ -1,15 +1,36 @@
 """
 Scripts for storing global objects with preset parameters.
 """
+import yaml
 from gcloud import storage
 from dotenv import load_dotenv
+from oauth2client.service_account import ServiceAccountCredentials
+
 # from src.paths import GCS_BUCKET
+from src.paths import root_path
 from src import custom_logging as logging
 from src.credentials import gcloud_credentials_dict
-from oauth2client.service_account import ServiceAccountCredentials
 
 
 load_dotenv()
+
+
+class ConfigLoader():
+
+    def __init__(self, config_path: str = root_path / 'config.yaml'):
+
+        with open(config_path) as stream:
+            try:
+                self.config = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+
+        for k, v in self.config.items():
+
+            if v == "[IGNORE]" or k.endswith('_VALUES'):
+                continue
+
+            setattr(self, k, v)
 
 # # loads Google Cloud credentials
 # credentials = ServiceAccountCredentials.from_json_keyfile_dict(

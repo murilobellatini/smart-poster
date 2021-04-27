@@ -1,125 +1,183 @@
+from pathlib import Path
+from PIL import Image
 import numpy as np
-from PIL import Image, ImageEnhance
-from src.image.detect import flip_if_necessary
-from src.image.draw import draw_text, resize_img
-from src.image.color import get_contrast_color, set_img_brightness
+
+from src.image.detect import ComputerVision
+from src.custom_logging import getLogger
+from src.image.color import ColorPicker
+from src.image.text import TextDrawer
+from src.image import ImageWrapper
 from src.paths import LOCAL_GLOBAL_DATA
 
 
-def compose_creative(img: Image, txt: str, bottom_right_txt: str = ' ', top_right_txt: str = ' ', padding: float = 60, txt_brightness: float = 1, txt_aspect_ratio: str = 'NARROW'):
-    """
-    Merges text `txt` to image `img` with possible overlays below:
-    Output with squared aspect ratio.
-    """
+class Creative(ImageWrapper):
 
-    canvas_black, canvas, overlay = load_layers(img)
+    def __init__(self, txt: str, bottom_right_txt: str = ' ', top_right_txt: str = ' ',
+                 img: Image = None, img_path: Path = None, img_url: str = None,
+                 img_np: np.array = None, padding: float = 40, txt_brightness: float = 3,
+                 txt_aspect_ratio: str = 'NARROW', font_family: str = 'Poppins',
+                 font_style: str = 'bold', font_color: str = 'AUTO', font_size: int = 50,
+                 output_size: tuple = (1080, 1080)):
 
-    txt_, top_right_txt_, bottom_right_txt_ = get_txt_layers(
-        img_=img, texts=(txt, top_right_txt, bottom_right_txt),
-        txt_brightness=txt_brightness, txt_aspect_ratio=txt_aspect_ratio)
+        super().__init__()
 
-    img_ = flip_if_necessary(img.convert("RGB"))
+        self.logger = getLogger(self.__class__.__name__)
 
-    canvas = merge_layers(bg=canvas, fg=img_,
-                          align='TOP_LEFT')
-    canvas = merge_layers(bg=canvas, fg=overlay,
-                          align='TOP_RIGHT')
-    canvas = merge_layers(bg=canvas, fg=txt_,
-                          align='LEFT_CENTERED_PADDED', padding=padding)
-    canvas = merge_layers(bg=canvas, fg=top_right_txt_,
-                          align='TOP_RIGHT_PADDED', padding=padding)
-    canvas = merge_layers(bg=canvas, fg=bottom_right_txt_,
-                          align='BOTTOM_RIGHT_PADDED', padding=padding)
-    canvas = merge_layers(bg=canvas_black, fg=canvas,
-                          align='TOP_LEFT', padding=padding)
+        self.txt = txt
+        self.bottom_right_txt = bottom_right_txt
+        self.top_right_txt = top_right_txt
 
-    return canvas.convert('RGB')
+        if self.ignore_config:
 
+            self.padding = padding
+            self.txt_brightness = txt_brightness
+            self.txt_aspect_ratio = txt_aspect_ratio
+            self.font_family = font_family
+            self.font_style = font_style
+            self.font_size = font_size
+            self.font_color = font_color
+            self.output_size = output_size
 
-def np2img(numpy_image: np.array):
-    return Image.fromarray(numpy_image.astype('uint8'), 'RGBA')
+        if img:
+            self.load_img(img)
+        elif img_path:
+            self.load_path(img_path)
+        elif img_url:
+            self.load_url(img_url)
+        elif img_np:
+            self.load_numpy(img_np)
+        else:
+            raise AttributeError
 
+        self.creative = self.compose_creative()
 
-def load_layers(img: Image, overlay: str = 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT'):
+    def compose_creative(self) -> Image:
+        """
+        Merges text `txt` to image `img` with possible overlays below:
+        Output with squared aspect ratio.
+        """
+        self.logger.debug(f'Composing creative...')
 
-    canvas_black = Image.open(
-        str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVAS_BLACK.png')).convert("RGBA")
+        cp = ComputerVision()
+        self.img = cp.load_img(self.img)
+        self.img = cp.smart_crop(self.output_size)
+        self.img = cp.flip_if_necessary()
 
-    canvas = Image.open(
-        str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVAS.png')).convert("RGBA")
+        canvas_black, canvas, overlay = self.load_layers()
+        txt_, top_right_txt_, bottom_right_txt_ = self.get_txt_layers()
 
-    if canvas.size == img.size:
-        overlay_ = Image.open(str(LOCAL_GLOBAL_DATA / f'{overlay}.png'))
-    else:
-        overlay_ = Image.open(
-            str(LOCAL_GLOBAL_DATA / 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT_SOFT.png'))
+        canvas = self.merge_layers(bg=canvas, fg=self.img,
+                                   align='TOP_LEFT')
+        canvas = self.merge_layers(bg=canvas, fg=overlay,
+                                   align='TOP_RIGHT')
+        canvas = self.merge_layers(bg=canvas, fg=txt_,
+                                   align='LEFT_CENTERED_PADDED')
+        canvas = self.merge_layers(bg=canvas, fg=top_right_txt_,
+                                   align='TOP_RIGHT_PADDED')
+        canvas = self.merge_layers(bg=canvas, fg=bottom_right_txt_,
+                                   align='BOTTOM_RIGHT_PADDED')
+        canvas = self.merge_layers(bg=canvas_black, fg=canvas,
+                                   align='TOP_LEFT')
 
-    return canvas_black, canvas, overlay_
+        self.creative = canvas.convert('RGB')
 
+        self.logger.debug('Creative successfully built...')
 
-def get_txt_layers(img_: Image, texts: tuple, txt_brightness: float, txt_aspect_ratio: str = 'NARROW') -> tuple:
+        return self.creative
 
-    txt2draw, top_right_txt, bottom_right_txt = texts
+    def load_layers(self, overlay: str = 'OVERLAY_80%OP_BLACK_BOTTOM_LEFT_SOFT') -> tuple:
+        self.logger.debug(f'Loading layers...')
 
-    ar, txt_w, txt_h = get_txt_stats(img_, txt_aspect_ratio)
+        canvas_black = Image.open(
+            str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVAS_BLACK.png')).convert("RGBA")
 
-    txt_color = get_contrast_color(img_, brightness=txt_brightness)
+        canvas = Image.open(
+            str(LOCAL_GLOBAL_DATA / 'SQUARED_CANVAS.png')).convert("RGBA")
 
-    txt_ = resize_img(draw_text(txt2draw, fontsize=200,
-                      fontcolor_hex=txt_color, target_ar=ar), (txt_w, txt_h))
-    txt_ = set_img_brightness(txt_, txt_brightness)
+        if canvas.size == self.img.size:
+            overlay_ = Image.open(str(LOCAL_GLOBAL_DATA / f'{overlay}.png'))
+        else:
+            overlay_ = Image.open(
+                str(LOCAL_GLOBAL_DATA / 'OVERLAY_100%OP_BLACK_BOTTOM_LEFT_SOFT.png'))
 
-    top_right_txt_ = resize_img(draw_text(f'{top_right_txt}',
-                                          font='Poppins-Light.otf', fontsize=200, fontcolor_hex=txt_color), (0, 0.05*img_.size[1]))
-    top_right_txt_ = set_img_brightness(top_right_txt_, txt_brightness)
+        self.canvas_black = canvas_black
+        self.canvas = canvas
+        self.overlay_ = overlay_
 
-    bottom_right_txt_ = resize_img(draw_text(f'{bottom_right_txt}',
-                                             font='Poppins-Italic.otf', fontsize=200, fontcolor_hex=txt_color), (0, 0.05*img_.size[1]))
-    bottom_right_txt_ = set_img_brightness(bottom_right_txt_, txt_brightness)
+        return canvas_black, canvas, overlay_
 
-    return txt_, top_right_txt_, bottom_right_txt_
+    def get_txt_layers(self) -> tuple:
+        self.logger.debug(f'Creating text layers...')
 
+        ar, txt_w, txt_h = self.get_txt_stats()
 
-def get_txt_stats(img_: Image, txt_aspect_ratio: str):
+        if self.font_color == 'AUTO':
+            cp = ColorPicker()
+            cp.load_img(self.img)
+            txt_color = cp.get_contrast_color(brightness=self.txt_brightness)
+        else:
+            txt_color = self.font_color
 
-    if txt_aspect_ratio == 'NARROW':
-        txt_w, txt_h = (0, img_.size[1]*.92)
-        ar = 0.3
-    elif txt_aspect_ratio == 'WIDE':
-        txt_w, txt_h = (img_.size[0]*.92, 0)
-        ar = 3.3
-    else:
-        raise NotImplementedError
+        self.img_txt = TextDrawer(txt=self.txt, font_family=self.font_family,
+                                  font_color=txt_color, font_style=self.font_style,
+                                  font_size=200, target_ar=ar, txt_brightness=self.txt_brightness,
+                                  size=(txt_w, txt_h)).img
 
-    return ar, txt_w, txt_h
+        self.img_txt_tr = TextDrawer(txt=self.top_right_txt, font_family=self.font_family,
+                                     font_color=txt_color, font_style='Light', padding_pct=.5,
+                                     txt_brightness=self.txt_brightness,
+                                     size=(0, 0.05*self.img.size[1])).img
 
+        self.img_txt_br = TextDrawer(txt=self.bottom_right_txt, font_family=self.font_family,
+                                     font_color=txt_color, font_style='Italic', padding_pct=.5,
+                                     txt_brightness=self.txt_brightness,
+                                     size=(0, 0.05*self.img.size[1])).img
 
-def merge_layers(bg: Image, fg: Image, align: str, pos_: tuple = None, padding: int = 0):
+        return self.img_txt, self.img_txt_tr, self.img_txt_br
 
-    if align == 'TOP_LEFT':
-        pos = (0, 0)
+    def get_txt_stats(self) -> tuple:
+        self.logger.debug(f'Getting text status...')
 
-    elif align == 'TOP_RIGHT':
-        pos = (int(bg.size[0] - fg.size[0]), 0)
+        if self.txt_aspect_ratio == 'NARROW':
+            txt_w, txt_h = (0, self.img.size[1]*.92)
+            ar = 0.3
+        elif self.txt_aspect_ratio == 'WIDE':
+            txt_w, txt_h = (self.img.size[0]*.92, 0)
+            ar = 3.3
+        else:
+            raise NotImplementedError
 
-    elif align == 'TOP_RIGHT_PADDED':
-        pos = (int(bg.size[0]-padding/2-fg.size[0]),
-               int(padding/2))
+        self.ar, self.txt_w, self.txt_h = ar, txt_w, txt_h
 
-    elif align == 'BOTTOM_RIGHT_PADDED':
-        pos = (int(bg.size[0]-padding/2-fg.size[0]),
-               int(bg.size[1]-padding/2-fg.size[1]))
+        return ar, txt_w, txt_h
 
-    elif align == 'LEFT_CENTERED_PADDED':
-        pos = (padding,
-               int((bg.size[1] - fg.size[1])/2))
+    def merge_layers(self, bg: Image, fg: Image, align: str, pos_: tuple = None):
+        self.logger.debug(f'Merging layers...')
 
-    elif align == 'CUSTOM':
-        pos = pos_
+        if align == 'TOP_LEFT':
+            pos = (0, 0)
 
-    else:
-        raise NotImplementedError
+        elif align == 'TOP_RIGHT':
+            pos = (int(bg.size[0] - fg.size[0]), 0)
 
-    bg.paste(fg, pos, fg)
+        elif align == 'TOP_RIGHT_PADDED':
+            pos = (int(bg.size[0]-self.padding/2-fg.size[0]),
+                   int(self.padding/2))
 
-    return bg
+        elif align == 'BOTTOM_RIGHT_PADDED':
+            pos = (int(bg.size[0]-self.padding/2-fg.size[0]),
+                   int(bg.size[1]-self.padding/2-fg.size[1]))
+
+        elif align == 'LEFT_CENTERED_PADDED':
+            pos = (self.padding,
+                   int((bg.size[1] - fg.size[1])/2))
+
+        elif align == 'CUSTOM':
+            pos = pos_
+
+        else:
+            raise NotImplementedError
+
+        bg.paste(fg, pos, fg)
+
+        return bg

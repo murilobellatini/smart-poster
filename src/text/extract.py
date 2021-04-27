@@ -1,64 +1,51 @@
 
-from __future__ import print_function
+from quote import quote
 
-from nltk.corpus import stopwords
-from nltk.stem.wordnet import WordNetLemmatizer
-import gensim
-from gensim import corpora
-import string
-import argparse
-import re
-from nltk import download
-
-download('stopwords')
-download('wordnet')
-
-regex = re.compile(
-    r'^(?:http|ftp)s?://'  # http:// or https://
-    # domain...
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'
-    r'localhost|'  # localhost...
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-    r'(?::\d+)?'  # optional port
-    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+from src.paths import LOCAL_PROCESSED_DATA_PATH
+from src.custom_logging import getLogger
+from src.text import Quote
+from src import ConfigLoader
 
 
-def generate_hashtags(text, lang: str = 'english', num_topics: int = 10, passes: int = 3):
+class QuoteExtractor(ConfigLoader):
 
-    stop = set(stopwords.words(lang))
-    exclude = set(string.punctuation)
-    lemma = WordNetLemmatizer()
+    def __init__(self, query: str, quote_source: str = 'QUOTE_API', limit: int = None, ignore_used_quotes: bool = True):
 
-    doc_complete = text.split('\n')
+        super().__init__()
 
-    def clean(doc):
-        stop_free = " ".join([i for i in doc.lower().split() if i not in stop])
-        punc_free = ''.join(ch for ch in stop_free if ch not in exclude)
-        normalized = " ".join(lemma.lemmatize(word)
-                              for word in punc_free.split())
-        return normalized
+        self.logger = getLogger(self.__class__.__name__)
 
-    doc_clean = [clean(doc).split() for doc in doc_complete]
-    dictionary = corpora.Dictionary(doc_clean)
-    doc_term_matrix = [dictionary.doc2bow(doc) for doc in doc_clean]
-    Lda = gensim.models.ldamodel.LdaModel
-    ldamodel = Lda(doc_term_matrix, num_topics=num_topics,
-                   id2word=dictionary, passes=passes)
-    topic = ldamodel.print_topics(num_topics=5, num_words=5)
+        if self.ignore_config:
+            self.quote_source = quote_source
+            self.ignore_used_quotes = ignore_used_quotes
 
-    hashtags = []
-    for t in topic:
-        for h in t[1].split('+'):
-            hashtags.append('#'+h[h.find('"')+1:h.rfind('"')])
+        self.query = query
+        self.limit = limit
 
-    return list(set(hashtags))
+        self._extract_quotes()
 
+    def _extract_quotes(self) -> None:
+        self.logger.debug(f'Extracting quotes from `{self.quote_source}`...')
 
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description='Python script to extract hashtags from URL or long text based on LDA model from GenSim')
-#     parser.add_argument('--document', type=str, required=True, default='', help='Path or URL to the document')
-#     parser.add_argument('--language', type=str, required=False, default='english', help='Language of the text')
-#     parser.add_argument('--hashtags', type=int, required=False, default=4, help='Number of hashtags to extract')
-#     parser.add_argument('--passes', type=int, required=False, default=50, help='Iteration for the LDA model to perform')
-#     FLAGS = parser.parse_args()
-#     main()
+        quotes_to_ignore = []
+
+        if self.ignore_used_quotes:
+            used_quotes_path = LOCAL_PROCESSED_DATA_PATH / "used_data/used_quotes.txt"
+            if used_quotes_path.is_file():
+                with open(used_quotes_path, mode="r") as fp:
+                    quotes_to_ignore = [l.split(',')[0]
+                                        for l in fp.read().splitlines()]
+
+        if self.quote_source == 'QUOTE_API':
+            results = []
+            for r in quote(search=self.query, limit=self.limit):
+                q = Quote(
+                    author=r.get('author'),
+                    quote=r.get('quote'),
+                    source=r.get('book'),
+                    source_type='book'
+                )
+                results.append(q)
+            self.results = [q for q in results if q.id not in quotes_to_ignore]
+        else:
+            raise NotImplementedError
