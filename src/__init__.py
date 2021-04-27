@@ -1,7 +1,7 @@
 """
 Scripts for storing global objects with preset parameters.
 """
-import json
+import yaml
 from gcloud import storage
 from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
@@ -17,10 +17,13 @@ load_dotenv()
 
 class ConfigLoader():
 
-    def __init__(self, config_path: str = root_path / 'config.json'):
+    def __init__(self, config_path: str = root_path / 'config.yaml'):
 
-        with open(config_path) as f:
-            self.config = json.load(f)
+        with open(config_path) as stream:
+            try:
+                self.config = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
 
         for k, v in self.config.items():
 

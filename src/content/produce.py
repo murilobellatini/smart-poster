@@ -28,7 +28,7 @@ class Post(ConfigLoader):
         self.img_url = img_url
 
         if self.ignore_config:
-            self.logger.debug('Loading data from `config.json` file')
+            self.logger.debug('Loading data from `config.yaml` file')
             self.profile_name = profile_name
             self.output_size = output_size
             self.txt_aspect_ratio = txt_aspect_ratio
