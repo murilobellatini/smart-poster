@@ -7,7 +7,7 @@ if __name__ == "__main__":
         description='Script for generating posts automatically based on a focal theme')
 
     parser.add_argument('-t', '--themes', type=str, required=True,
-                        help='String of themes to generate the posts about; Enter multiple themes separating by comma `,`')
+                        help='String of themes to generate the posts about; Enter multiple ones separated by comma `,`')
 
     parser.add_argument('-c', '--post_count_per_theme', type=int, required=True,
                         help='Amount of posts per theme')
