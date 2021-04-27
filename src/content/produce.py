@@ -121,7 +121,7 @@ class Post(ConfigLoader):
                     p = wikipedia.page(r)
                     break
                 except Exception as e:
-                    self.logger.error(
+                    self.logger.warning(
                         f'Exception thrown for `{r}`. Skipping result...\n`{e}`')
             return p.url
 
