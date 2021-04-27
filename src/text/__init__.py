@@ -12,10 +12,9 @@ from src import ConfigLoader
 from src.custom_logging import getLogger
 from src.helpers import get_hashed_str, capitalize_first_letter
 
-download('stopwords')
-download('wordnet')
+download('stopwords', quiet=True)
+download('wordnet', quiet=True)
 nlp = spacy.load('en_core_web_sm')
-
 
 regex = re.compile(
     r'^(?:http|ftp)s?://'  # http:// or https://
