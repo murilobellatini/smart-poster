@@ -9,7 +9,7 @@ output_size: [1080, 1080]
 txt_aspect_ratio: NARROW # NARROW|WIDE
 font_family: Poppins # Arial|DancingScript|Georgia|Montserrat|Poppins
 font_style: Bold # Bold|Italic|Light
-font_color: AUTO # auto (or hex values)
+font_color: AUTO # AUTO (or hex values)
 img_format: PNG
 posts_per_theme: "[IGNORE]"
 txt_word_count: 16
