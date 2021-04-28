@@ -13,7 +13,7 @@ from src.paths import LOCAL_PROCESSED_DATA_PATH
 
 class Post(ConfigLoader):
 
-    def __init__(self, quote: Quote, img_url: str, profile_name: str = ' ',
+    def __init__(self, quote: Quote, img_url: str, img_meta: dict = None, profile_name: str = ' ',
                  output_size: tuple = (1080, 1080), txt_aspect_ratio: str = 'NARROW',
                  font_family: str = 'Poppins', font_style: str = 'Bold',
                  font_color: str = 'AUTO') -> None:
@@ -36,6 +36,7 @@ class Post(ConfigLoader):
             self.font_style = font_style
             self.font_color = font_color
 
+        self.img_meta = img_meta
         self.caption = quote.caption
         self.hashtags = quote.hashtags
         self.txt2draw = quote.main_txt
@@ -59,11 +60,27 @@ class Post(ConfigLoader):
 
         self.creative = c.creative
 
-        cta = ['\n']
+        cta = ['\n💬 About the Quote...']
 
         cta.append(
             f'📕 {self.quote.source_type.title()}: {self.quote.source.title()}')
         cta.append(f'✍️ Author: {self.quote.author.title()}')
+
+        if self.img_meta:
+            cta.append(10*'➖')
+            cta.append(
+                f'📷 About the Photographer...')
+            if self.img_meta.get('author_name'):
+                cta.append(
+                    f"👤 Name: {self.img_meta.get('author_name').title()}")
+            if self.img_meta.get('instagram_username'):
+                cta.append(
+                    f"🖼️ Instagram: @{self.img_meta.get('instagram_username')}")
+            elif self.img_meta.get('username'):
+                cta.append(f"🖼️ Unsplash: @{self.img_meta.get('username')}")
+            if self.img_meta.get('portfolio_url'):
+                cta.append(
+                    f"🔗 Portfolio: {self.img_meta.get('portfolio_url')}")
 
         cta.extend([
             10*'➖',
@@ -98,7 +115,7 @@ class Post(ConfigLoader):
 
         self.caption += '\n'.join(cta)
 
-        self.caption = self.caption.strip()
+        self.caption = self.caption
 
         with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_quotes.txt", "a") as fp:
             fp.write(f'{self.quote.id},"{self.quote.main_txt}"\n')
@@ -221,6 +238,7 @@ class ContentProducer(ConfigLoader):
                     break
 
                 p = Post(quote=q, img_url=img_url,
+                         img_meta=ie.metadata.get(img_url),
                          profile_name=self.profile_name,
                          output_size=self.output_size,
                          txt_aspect_ratio=self.txt_aspect_ratio,

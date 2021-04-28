@@ -28,12 +28,12 @@ class ApiImgExtractor(ConfigLoader):
         super().__init__()
 
         self.logger = getLogger(self.__class__.__name__)
-
         if api not in api_instances.keys():
             raise NotImplementedError
 
         self.api = api
         self.api_instance = api_instances[self.api]
+        self.metadata = {}
         self.img_urls = set()  # all found image urls (accumulated)
         self.curr_img_urls = set()  # image urls from current pagination only
 
@@ -118,9 +118,16 @@ class ApiImgExtractor(ConfigLoader):
 
         while len(self.img_urls) < min_return_count:
             if self.api == 'unsplash':
-                self.curr_img_urls = set(r['urls']['full']
-                                         for r in list(self.cursor.body['results'])
-                                         if r['urls']['full'] not in img_urls_to_ignore)
+                self.curr_metadata = {
+                    r['urls']['full']: {
+                        'author_name': r['user']['name'],
+                        'instagram_username': r['user']['instagram_username'],
+                        'username': r['user']['username'],
+                        'portfolio_url': r['links']['html'],
+                    } for r in self.cursor.body['results']
+                    if r['urls']['full'] not in img_urls_to_ignore}
+
+                self.curr_img_urls = set(self.curr_metadata.keys())
 
             if self.api == 'google':
                 self.curr_img_urls = set(im.url
@@ -131,6 +138,8 @@ class ApiImgExtractor(ConfigLoader):
 
             self.img_urls = set(
                 url for url in list(self.img_urls) if url not in img_urls_to_ignore)
+
+            self.metadata.update(self.curr_metadata)
 
             try:
                 self.paginate_results(ignore_img_update=True)
