@@ -37,15 +37,25 @@ class QuoteExtractor(ConfigLoader):
                                         for l in fp.read().splitlines()]
 
         if self.quote_source == 'QUOTE_API':
-            results = []
-            for r in quote(search=self.query, limit=self.limit):
-                q = Quote(
-                    author=r.get('author'),
-                    quote=r.get('quote'),
-                    source=r.get('book'),
-                    source_type='book'
-                )
-                results.append(q)
-            self.results = [q for q in results if q.id not in quotes_to_ignore]
+            unused_results = results = []
+            limit = self.limit
+
+            while not unused_results:
+
+                for r in quote(search=self.query, limit=limit):
+
+                    q = Quote(
+                        author=r.get('author'),
+                        quote=r.get('quote'),
+                        source=r.get('book'),
+                        source_type='book'
+                    )
+                    results.append(q)
+
+                unused_results = [
+                    q for q in results if q.id not in quotes_to_ignore]
+
+                limit = limit*2  # @todo: improve logic
+            self.results = unused_results[:self.limit]
         else:
             raise NotImplementedError
