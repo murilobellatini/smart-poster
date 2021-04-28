@@ -26,14 +26,17 @@ optional arguments:
 
 #### Environment variables
 
+#### Required
 * `UNSPLASH_ACCESS_KEY`: Access key for Unsplash API
 * `UNSPLASH_SECRET_KEY`: Secret key for Unsplash API
 * `GCP_KEY`: Google Cloud key with Image Custom Search enabled
 * `GCX`: Google context
+
+#### To be implemented
 * `FB_ACCESS_TOKEN`: Token for interacting with Facebook Graph API (with basic privileges)
 * `FB_ACCESS_TOKEN_SANDBOX`: Token with advanced privileges for using Marketing API features
 * `AD_ACCOUNT_ID`: Account ID for interacting with Business Data
-* 
+
 **Note**
 
 > Alternatively create `.env` file at root of repo for setting env vars.
