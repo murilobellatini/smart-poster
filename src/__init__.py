@@ -21,7 +21,8 @@ class ConfigLoader():
 
         with open(config_path) as stream:
             try:
-                self.config = yaml.safe_load(stream)
+                config = yaml.safe_load(stream).values()
+                self.config = {k: v for d in config for k, v in d.items()}
             except yaml.YAMLError as exc:
                 print(exc)
 
