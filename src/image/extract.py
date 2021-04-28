@@ -47,6 +47,7 @@ class ApiImgExtractor(ConfigLoader):
             'num': 10,
             'safe': 'high|medium|off',
             'fileType': 'jpg|gif|png',
+            # imgType defaults to `photo`
             'imgType': google -> 'clipart|face|lineart|news|photo' / unsplash -> 'photos|colletions|users'
             'imgSize': 'huge|icon|large|medium|small|xlarge|xxlarge',
             'imgDominantColor': 'black|blue|brown|gray|green|pink|purple|teal|white|yellow',
@@ -57,6 +58,8 @@ class ApiImgExtractor(ConfigLoader):
         """
         self.logger.debug(
             f'Requesting API {self.api} for images... Query: {_search_params["q"]}')
+
+        _search_params = self._get_default_params(_search_params)
 
         img_urls_to_ignore = []
 
@@ -94,6 +97,21 @@ class ApiImgExtractor(ConfigLoader):
                 img_urls_to_ignore=img_urls_to_ignore,
                 min_return_count=_search_params.get('return_count')
             )
+
+    def _get_default_params(self, _search_params: dict) -> dict:
+
+        if (not _search_params.get('imgType')) or ('photo' in _search_params.get('imgType')):
+            if self.api == 'unsplash':
+                _search_params['imgType'] = 'photos'
+            elif self.api == 'google':
+                _search_params['imgType'] = 'photo'
+            else:
+                raise NotImplementedError
+
+        if not _search_params.get('return_count'):
+            _search_params['return_count'] = 10
+
+        return _search_params
 
     def _update_img_urls(self, img_urls_to_ignore: list = None, min_return_count: int = 1) -> None:
         self.logger.debug(f'Gathering image urls into single list...')

@@ -9,7 +9,7 @@ from src import ConfigLoader
 
 class QuoteExtractor(ConfigLoader):
 
-    def __init__(self, query: str, quote_source: str = 'QUOTE_API', limit: int = None, ignore_used_quotes: bool = True):
+    def __init__(self, query: str, quote_source: str = 'QUOTE_API', limit: int = 10, ignore_used_quotes: bool = True):
 
         super().__init__()
 
