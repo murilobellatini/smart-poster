@@ -15,6 +15,9 @@ optional arguments:
                     amount of posts per theme
 ```
 
+**Note**
+> Posts generated according configuration set in `config.yaml` file.
+
 ## How to setup
 
 ### Requirements
