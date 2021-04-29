@@ -1,5 +1,6 @@
 import requests
 import numpy as np
+from io import BytesIO
 from src import ConfigLoader
 from PIL import Image, ImageEnhance
 
@@ -28,8 +29,8 @@ class ImageWrapper(ConfigLoader):
         self.img_np = self.img2np(self.img)
 
     def load_url(self, img_url: str) -> None:
-        self.img = Image.open(requests.get(
-            img_url, stream=True, headers={"User-Agent": "XY"}).raw)
+        self.img = Image.open(BytesIO(requests.get(
+            img_url, stream=True, headers={"User-Agent": "XY"}).content))
         self.img_np = self.img2np(self.img)
 
     def set_img_brightness(self, bightness_factor: float) -> Image:
