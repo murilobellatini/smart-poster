@@ -7,7 +7,7 @@ from src import ConfigLoader
 from src.image.merge import Creative
 from src.custom_logging import getLogger
 from src.text.extract import QuoteExtractor
-from src.image.extract import ApiImgExtractor
+from src.image.extract import ImgExtractorFactory
 from src.paths import LOCAL_PROCESSED_DATA_PATH
 
 
@@ -186,7 +186,7 @@ class ContentProducer(ConfigLoader):
 
         for t in self.themes:
 
-            ie = ApiImgExtractor(self.img_api)
+            ie = ImgExtractorFactory().create_extractor(api=self.img_api)
             qe = QuoteExtractor(
                 query=t, quote_source='QUOTE_API', limit=self.posts_per_theme)
 
@@ -194,7 +194,7 @@ class ContentProducer(ConfigLoader):
                 ie.query(_search_params={
                     'q': t,
                     'imgType': 'photos',
-                    'return_count': self.posts_per_theme,
+                    'num': self.posts_per_theme,
                 })
 
             if not qe.results:
@@ -213,13 +213,13 @@ class ContentProducer(ConfigLoader):
                               q.filter_tags(tags="VERB") +
                               [t])]
 
-                    ie = ApiImgExtractor(self.img_api)
+                    ie = ImgExtractorFactory().create_extractor(api=self.img_api)
                     while not ie.img_urls:
                         chosen_t = random.choice(tokens)
                         ie.query(_search_params={
                             'q': chosen_t,
                             'imgType': 'photos',
-                            'return_count': self.posts_per_theme,
+                            'num': self.posts_per_theme,
                         })
                         tokens.remove(chosen_t)
                         if not tokens:
