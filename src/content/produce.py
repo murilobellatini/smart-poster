@@ -1,3 +1,4 @@
+import os
 import random
 import wikipedia
 from pathlib import Path
@@ -117,10 +118,13 @@ class Post(ConfigLoader):
 
         self.caption = self.caption
 
-        with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_quotes.txt", "a") as fp:
+        if not os.path.exists(LOCAL_PROCESSED_DATA_PATH / "used_data"):
+            os.makedirs(LOCAL_PROCESSED_DATA_PATH / "used_data")
+
+        with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_quotes.txt", "a+") as fp:
             fp.write(f'{self.quote.id},"{self.quote.main_txt}"\n')
 
-        with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_img_urls.txt", "a") as fp:
+        with open(LOCAL_PROCESSED_DATA_PATH / "used_data/used_img_urls.txt", "a+") as fp:
             fp.write(self.img_url + '\n')
 
         self.logger.debug('Post built successfully...')
