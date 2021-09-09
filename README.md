@@ -2,6 +2,14 @@
 
 Application for generating social media posts automatically. In a smart way 🤓.
 
+Check out our experimental Instagram profile with auto-generated posts (image and caption).
+
+> Instagram Profile: [📸 the.wisdom.drops](https://www.instagram.com/the.wisdom.drops/)
+
+## Examples
+
+![image](https://user-images.githubusercontent.com/43999445/132679748-7ba155b2-b1ad-4136-a403-9d49ec15d03a.png)
+
 ## Usage
 
 ```bash
