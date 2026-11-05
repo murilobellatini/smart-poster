@@ -1,5 +1,9 @@
 # SmartPoster
 
+> Generates a post: image and caption, ready to publish.
+> Used for an experimental Instagram profile, the.wisdom.drops.
+> Example and usage below.
+
 Application for generating social media posts automatically. In a smart way 🤓.
 
 Check out our experimental Instagram profile with auto-generated posts (image and caption).
