@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "smart-poster"
+abstract: "Generates social media posts (image and caption) automatically."
+type: software
+authors:
+  - family-names: Bellatini
+    given-names: Murilo
+repository-code: "https://github.com/murilobellatini/smart-poster"
+license: MIT

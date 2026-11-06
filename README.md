@@ -73,3 +73,7 @@ pip install -r requirements.txt
 ```
 
 3. Run script from cli (check `Usage` above)
+
+## Cite
+
+If this helps you, please credit Murilo Bellatini and link this repo. GitHub's "Cite this repository" button uses `CITATION.cff`.
